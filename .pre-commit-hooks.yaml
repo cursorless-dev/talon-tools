@@ -1,0 +1,6 @@
+- id: talonfmt
+  name: talonfmt
+  description: "talonfmt: .talon file formatter"
+  entry: talonfmt
+  language: node
+  files: \.(talon|talon-list)$

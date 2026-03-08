@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "nodenext",
+        "target": "esnext",
+        "moduleResolution": "nodenext",
+        "rootDir": "src",
+        "esModuleInterop": true,
+        "noEmit": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": true
+    },
+    "include": ["src"]
+}
