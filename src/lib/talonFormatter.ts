@@ -1,5 +1,5 @@
 import type { Node } from "web-tree-sitter";
-import { getColumnWidth } from "./util/getColumnWidth";
+import { getColumnWidth } from "../util/getColumnWidth.js";
 
 interface Properties {
     indentation: string;

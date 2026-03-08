@@ -1,5 +1,5 @@
 import * as assert from "node:assert";
-import { talonListFormatter } from "../talonListFormatter";
+import { talonListFormatter } from "../lib/talonListFormatter.js";
 
 const fixtures: {
     title: string;

@@ -1,6 +1,6 @@
 import * as assert from "node:assert";
-import { talonFormatter } from "../talonFormatter";
-import { parseText } from "../util/parseText";
+import { talonFormatter } from "../lib/talonFormatter.js";
+import { parseText } from "../util/parseText.js";
 
 type Content = string | string[];
 

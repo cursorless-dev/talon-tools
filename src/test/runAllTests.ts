@@ -1,13 +1,14 @@
 import { globSync } from "glob";
 import Mocha from "mocha";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const mocha = new Mocha({
     ui: "tdd",
     color: true,
 });
 
-const cwd = path.resolve(__dirname);
+const cwd = path.dirname(fileURLToPath(import.meta.url));
 
 const files = globSync("**/**.test.ts", { cwd }).sort();
 

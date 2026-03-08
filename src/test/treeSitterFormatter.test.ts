@@ -1,6 +1,6 @@
 import * as assert from "node:assert";
-import { treeSitterFormatter } from "../treeSitterFormatter";
-import { parseText } from "../util/parseText";
+import { treeSitterQueryFormatter } from "../lib/treeSitterQueryFormatter.js";
+import { parseText } from "../util/parseText.js";
 
 type Content = string | string[];
 
@@ -102,7 +102,7 @@ suite("Tree-sitter formatter", () => {
         test(fixture.title, async () => {
             const content = getContentString(fixture.pre);
             const rootNode = await parseText(content, "tree-sitter-query");
-            const actual = treeSitterFormatter(rootNode, {
+            const actual = treeSitterQueryFormatter(rootNode, {
                 indentation: "    ",
             });
             const expected = getContentString(fixture.post);

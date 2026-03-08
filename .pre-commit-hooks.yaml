@@ -1,6 +1,23 @@
-- id: talonfmt
-  name: talonfmt
-  description: "talonfmt: .talon file formatter"
-  entry: talonfmt
+- id: talon-fmt
+  name: Format Talon files
+  entry: talon-fmt
   language: node
-  files: \.(talon|talon-list)$
+  files: \.talon$
+
+- id: talon-list-fmt
+  name: Format Talon list files
+  entry: talon-list-fmt
+  language: node
+  files: \.talon-list$
+
+- id: talon-snippet-fmt
+  name: Format Talon snippet files
+  entry: talon-snippet-fmt
+  language: node
+  files: \.snippet$
+
+- id: tree-sitter-query-fmt
+  name: Format Tree-sitter query files
+  entry: tree-sitter-query-fmt
+  language: node
+  files: \.scm$

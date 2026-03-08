@@ -3,6 +3,7 @@
     "displayName": "Pre-commit hooks",
     "version": "0.1.0",
     "license": "MIT",
+    "type": "module",
     "files": [
         "out/*",
         "LICENSE"
@@ -11,7 +12,10 @@
         ".": "./out/lib.js"
     },
     "bin": {
-        "talonfmt": "./out/talonfmt.js"
+        "talon-fmt": "./out/talonFormatter.js",
+        "talon-list-fmt": "./out/talonListFormatter.js",
+        "talon-snippet-fmt": "./out/talonSnippetFormatter.js",
+        "tree-sitter-query-fmt": "./out/treeSitterQueryFormatter.js"
     },
     "repository": {
         "type": "git",

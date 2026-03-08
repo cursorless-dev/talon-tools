@@ -1,5 +1,5 @@
 import * as assert from "node:assert";
-import { snippetFormatter } from "../snippetFormatter";
+import { talonSnippetFormatter } from "../lib/talonSnippetFormatter.js";
 
 type Content = string | string[];
 
@@ -174,7 +174,7 @@ suite("Snippet formatter", () => {
     for (const fixture of fixtures) {
         test(fixture.title, function () {
             const content = getContentString(fixture.pre);
-            const actual = snippetFormatter(content);
+            const actual = talonSnippetFormatter(content);
             const expected = getContentString(fixture.post);
             assert.equal(actual, expected);
         });

@@ -1,5 +1,5 @@
-import { parseTalonList } from "./util/parseTalonList";
-import { getColumnWidth } from "./util/getColumnWidth";
+import { getColumnWidth } from "../util/getColumnWidth.js";
+import { parseTalonList } from "./parseTalonList.js";
 
 interface Properties {
     columnWidth?: number;
