@@ -101,7 +101,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 function printHelp(cli: CLI) {
-    console.log(`Usage: ${cli.binName} [--check|--write] <file> [file ...]`);
+    console.log(`Usage: ${cli.binName} [--check] <file> [file ...]`);
 }
 
 function isMissingFileError(error: unknown) {

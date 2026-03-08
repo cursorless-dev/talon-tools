@@ -1,6 +1,6 @@
 {
-    "name": "pre-commit-hooks",
-    "displayName": "Pre-commit hooks",
+    "name": "talon-tools",
+    "displayName": "Talon Tools",
     "version": "0.1.0",
     "license": "MIT",
     "type": "module",
