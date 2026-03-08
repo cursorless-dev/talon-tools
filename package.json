@@ -19,12 +19,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/AndreasArvidsson/pre-commit-hooks"
+        "url": "https://github.com/cursorless-dev/talon-tools"
     },
+    "funding": "https://github.com/sponsors/cursorless-dev",
     "sponsor": {
-        "url": "https://github.com/sponsors/AndreasArvidsson"
+        "url": "https://github.com/sponsors/cursorless-dev"
     },
-    "funding": "https://github.com/sponsors/AndreasArvidsson",
     "scripts": {
         "prepack": "npm run build",
         "build": "tsx ./src/build.ts",
