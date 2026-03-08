@@ -1,6 +1,6 @@
 # Talon tools
 
-Lint and formatting tools for Talon and Cursorless.
+Linting and formatting tools for Talon and Cursorless.
 
 ## Guidelines
 
