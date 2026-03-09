@@ -9,7 +9,6 @@ export async function parseFilePatterns(
     cli: CLI,
     filePatterns: string[],
 ): Promise<string[]> {
-    const cwd = process.cwd();
     const seen: Set<string> = new Set();
     const globFileEndingPattern = getGlobFileEndingsPattern(cli.fileEndings);
 
@@ -19,7 +18,7 @@ export async function parseFilePatterns(
     };
 
     for (const pattern of filePatterns) {
-        const absolutePath = path.resolve(cwd, pattern);
+        const absolutePath = path.resolve(pattern);
         const stat = await lstatSafe(absolutePath);
 
         if (stat != null) {
@@ -49,7 +48,7 @@ export async function parseFilePatterns(
         const glob = normalizeToPosix(pattern);
         const files = await fastGlob(glob, globOptions);
         for (const file of files) {
-            seen.add(path.resolve(cwd, file));
+            seen.add(path.resolve(file));
         }
     }
 
