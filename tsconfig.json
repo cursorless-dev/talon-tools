@@ -4,13 +4,17 @@
         "target": "esnext",
         "moduleResolution": "nodenext",
         "rootDir": "src",
+        "outDir": "out",
         "esModuleInterop": true,
         "resolveJsonModule": true,
-        "noEmit": true,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "declarationMap": false,
         "strict": true,
         "noImplicitAny": true,
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true
     },
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": ["src/test", "src/cli", "src/build.ts"]
 }
