@@ -5,7 +5,7 @@ export interface CLI {
 }
 
 export interface ParsedArgs {
-    fileNames: string[];
+    filePatterns: string[];
     help: boolean;
     check: boolean;
 }

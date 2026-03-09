@@ -3,10 +3,10 @@
 import { talonListFormatter } from "../lib/index.js";
 import { talonFormatter } from "../lib/talonFormatter.js";
 import { parseText } from "../util/parseText.js";
-import { run } from "./cli.js";
-import { indentation } from "./constants.js";
+import { main } from "./cli.js";
+import { indentation } from "../util/constants.js";
 
-void run({
+void main({
     binName: "talon-fmt",
 
     format: async (text: string, fileName: string) => {

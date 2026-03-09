@@ -1,46 +1,88 @@
+import getStdin from "get-stdin";
 import * as fs from "node:fs/promises";
 import * as process from "node:process";
 import type { CLI } from "../types.js";
+import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
 
-export async function run(cli: CLI): Promise<void> {
+export async function main(cli: CLI): Promise<void> {
     try {
-        const argv = process.argv.slice(2);
-        const exitCode = await main(cli, argv);
+        const exitCode = await mainUnsafe(cli);
         process.exit(exitCode);
     } catch (error) {
         console.error(getErrorMessage(error));
-        // Exit code 2: Unexpected error
-        process.exit(2);
+        process.exit(EXIT_ERROR);
     }
 }
 
-async function main(cli: CLI, argv: string[]): Promise<number> {
-    const args = parseArgs(argv);
+async function mainUnsafe(cli: CLI): Promise<number> {
+    const args = parseArgs(process.argv.slice(2));
 
     if (args.help) {
         printHelp(cli);
-        return 0;
+        return EXIT_OK;
     }
 
-    if (args.check) {
+    const hasFilePatterns = args.filePatterns.length > 0;
+
+    if (hasFilePatterns) {
+        return mainFormatFiles(cli, args.filePatterns, args.check);
+    }
+
+    // If no file patterns are provided, check if there's input from stdin.
+    // If stdin TTY it's an interactive terminal, so we shouldn't read from it.
+    if (!process.stdin.isTTY) {
+        return mainFormatStdin(cli, args.check);
+    }
+
+    throw new Error(
+        "No input files specified. Use --help for usage information.",
+    );
+}
+
+async function mainFormatStdin(
+    cli: CLI,
+    check: boolean = false,
+): Promise<number> {
+    const input = await getStdin();
+    const formatted = await cli.format(input, "stdin");
+
+    if (check) {
+        if (input !== formatted) {
+            process.stderr.write("[warn] Code style issues found in stdin.");
+            return EXIT_FAIL;
+        }
+
+        return EXIT_OK;
+    }
+
+    process.stdout.write(formatted);
+
+    return EXIT_OK;
+}
+
+async function mainFormatFiles(
+    cli: CLI,
+    filePatterns: string[],
+    check: boolean = false,
+): Promise<number> {
+    if (check) {
         console.log("Checking formatting...");
     }
 
-    const changedFileCount = await formatFiles(cli, args.fileNames, args.check);
+    const changedFileCount = await formatFiles(cli, filePatterns, check);
 
-    if (args.check) {
+    if (check) {
         if (changedFileCount > 0) {
             console.warn(
                 `[warn] Code style issues found in ${changedFileCount} file(s).`,
             );
-            // Exit code 1: Check failed
-            return 1;
+            return EXIT_FAIL;
         }
 
         console.log("All matched files use correct code style!");
-        return 0;
+        return EXIT_OK;
     }
 
     if (changedFileCount > 0) {
@@ -49,17 +91,17 @@ async function main(cli: CLI, argv: string[]): Promise<number> {
         console.log("All files are already formatted.");
     }
 
-    return 0;
+    return EXIT_OK;
 }
 
 export async function formatFiles(
     cli: CLI,
-    fileNames: string[],
+    filePatterns: string[],
     check: boolean = false,
 ): Promise<number> {
     let changedFileCount = 0;
 
-    for (const fileName of fileNames) {
+    for (const fileName of filePatterns) {
         if (await formatFile(cli, fileName, check)) {
             changedFileCount++;
         }

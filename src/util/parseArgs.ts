@@ -18,16 +18,17 @@ const ARG_HANDLERS: Record<KnownArgument, ArgHandler> = {
 
 export function parseArgs(argv: string[]): ParsedArgs {
     const result: ParsedArgs = {
-        fileNames: [],
+        filePatterns: [],
         help: false,
         check: false,
     };
 
-    for (let index = 0; index < argv.length; index++) {
-        const arg = argv[index];
+    for (let i = 0; i < argv.length; i++) {
+        const arg = argv[i];
 
         if (arg === "--") {
-            result.fileNames.push(...argv.slice(index + 1));
+            // All following arguments are treated as file patterns, even if they start with "--"
+            result.filePatterns.push(...argv.slice(i + 1));
             break;
         }
 
@@ -42,7 +43,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
             throw new Error(`Unknown argument: ${arg}`);
         }
 
-        result.fileNames.push(arg);
+        result.filePatterns.push(arg);
     }
 
     return result;

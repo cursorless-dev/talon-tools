@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { snippetFormatter } from "../lib/snippetFormatter.js";
-import { run } from "./cli.js";
+import { main } from "./cli.js";
 
-void run({
+void main({
     binName: "snippet-fmt",
 
     format: async (text: string) => {

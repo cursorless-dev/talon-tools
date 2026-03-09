@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { formatFile, formatFiles } from "../cli/cli.js";
 import { parseArgs } from "../util/parseArgs.js";
+import type { ParsedArgs } from "../types.js";
 
 suite("CLI", () => {
     test("formats a file in place", async () => {
@@ -104,23 +105,25 @@ suite("CLI", () => {
     });
 
     test("parses check mode", () => {
-        const actual = parseArgs(["--check", "a.txt", "b.txt"]);
-
-        assert.deepEqual(actual, {
-            fileNames: ["a.txt", "b.txt"],
+        const expected: ParsedArgs = {
+            filePatterns: ["a.txt", "b.txt"],
             help: false,
             check: true,
-        });
+        };
+        const actual = parseArgs(["--check", "a.txt", "b.txt"]);
+
+        assert.deepEqual(actual, expected);
     });
 
     test("parses check mode and end-of-options marker", () => {
-        const actual = parseArgs(["--check", "--", "--check"]);
-
-        assert.deepEqual(actual, {
-            fileNames: ["--check"],
+        const expected: ParsedArgs = {
+            filePatterns: ["--check"],
             help: false,
             check: true,
-        });
+        };
+        const actual = parseArgs(["--check", "--", "--check"]);
+
+        assert.deepEqual(actual, expected);
     });
 
     test("rejects unknown arguments", () => {
