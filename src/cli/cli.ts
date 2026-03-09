@@ -21,7 +21,7 @@ export async function main(cli: CLI): Promise<void> {
 }
 
 async function mainUnsafe(cli: CLI): Promise<number> {
-    const args = parseArgs(process.argv.slice(2));
+    const args = parseArgs(cli, process.argv.slice(2));
 
     if (args.help) {
         printHelp(cli);

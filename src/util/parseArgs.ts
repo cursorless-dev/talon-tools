@@ -1,23 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { ParsedArgs } from "../types.js";
+import type {
+    CLI,
+    FlagArg,
+    GlobalFlagArg,
+    ParsedArgs,
+    ValueArg,
+} from "../types.js";
 import { getDefaultArguments } from "./getDefaultArguments.js";
 
-export const KNOWN_FLAG_ARGUMENTS = [
-    "--help",
-    "--version",
-    "--check",
-    "--indent-tabs",
-] as const;
-
-export const KNOWN_VALUE_ARGUMENTS = [
-    "--indent-width",
-    "--line-width",
-    "--column-width",
-] as const;
-
-type FlagArg = (typeof KNOWN_FLAG_ARGUMENTS)[number];
-type ValueArg = (typeof KNOWN_VALUE_ARGUMENTS)[number];
 type KnownArg = FlagArg | ValueArg;
 
 type FlagHandler = (parsedArgs: ParsedArgs) => void;
@@ -28,7 +19,7 @@ type ValueHandler = (
     value: string,
 ) => void;
 
-const FLAG_ARG_HANDLERS: Record<FlagArg, FlagHandler> = {
+const GLOBAL_FLAG_ARG_HANDLERS: Record<GlobalFlagArg, FlagHandler> = {
     "--help": (parsedArgs) => {
         parsedArgs.help = true;
     },
@@ -38,6 +29,9 @@ const FLAG_ARG_HANDLERS: Record<FlagArg, FlagHandler> = {
     "--check": (parsedArgs) => {
         parsedArgs.check = true;
     },
+};
+
+const FLAG_ARG_HANDLERS: Record<FlagArg, FlagHandler> = {
     "--indent-tabs": (parsedArgs) => {
         parsedArgs.indentTabs = true;
     },
@@ -55,8 +49,10 @@ const VALUE_ARG_HANDLERS: Record<ValueArg, ValueHandler> = {
     },
 };
 
-export function parseArgs(argv: string[]): ParsedArgs {
+export function parseArgs(cli: CLI, argv: string[]): ParsedArgs {
     const result = getDefaultArguments();
+    const supportedFlagArgs = new Set(cli.supportedFlagArgs);
+    const supportedValueArgs = new Set(cli.supportedValueArgs);
 
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i];
@@ -67,16 +63,24 @@ export function parseArgs(argv: string[]): ParsedArgs {
             break;
         }
 
+        const globalFlagHandler =
+            GLOBAL_FLAG_ARG_HANDLERS[arg as GlobalFlagArg];
+
+        if (globalFlagHandler != null) {
+            globalFlagHandler(result);
+            continue;
+        }
+
         const flagHandler = FLAG_ARG_HANDLERS[arg as FlagArg];
 
-        if (flagHandler != null) {
+        if (flagHandler != null && supportedFlagArgs.has(arg as FlagArg)) {
             flagHandler(result);
             continue;
         }
 
         const valueHandler = VALUE_ARG_HANDLERS[arg as ValueArg];
 
-        if (valueHandler != null) {
+        if (valueHandler != null && supportedValueArgs.has(arg as ValueArg)) {
             const value = argv[i + 1];
             if (value == null) {
                 throw new Error(`Missing value for argument: ${arg}`);

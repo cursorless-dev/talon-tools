@@ -7,6 +7,8 @@ import { main } from "./cli.js";
 void main({
     binName: "tree-sitter-fmt",
     fileEndings: ["scm"],
+    supportedFlagArgs: ["--indent-tabs"],
+    supportedValueArgs: ["--indent-width"],
 
     format: async (text, options) => {
         const node = await parseText(text, "tree-sitter-query");

@@ -170,6 +170,8 @@ function createCLI(): CLI {
     return {
         binName: "talon-fmt",
         fileEndings: ["txt"],
+        supportedFlagArgs: [],
+        supportedValueArgs: [],
         format: (text: string) => Promise.resolve(text),
     };
 }

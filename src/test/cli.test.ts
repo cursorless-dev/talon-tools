@@ -11,6 +11,7 @@ import {
     getDefaultOptions,
 } from "../util/getDefaultArguments.js";
 import { parseArgs } from "../util/parseArgs.js";
+import { printHelp } from "../util/printHelp.js";
 
 suite("CLI", () => {
     test("formats a file in place", async () => {
@@ -180,6 +181,8 @@ suite("CLI", () => {
         const cli: CLI = {
             binName: "talon-fmt",
             fileEndings: ["txt"],
+            supportedFlagArgs: ["--indent-tabs"],
+            supportedValueArgs: ["--indent-width", "--column-width"],
             format: (text, receivedOptions, receivedFileName) => {
                 actualText = text;
                 actualOptions = receivedOptions;
@@ -211,6 +214,8 @@ suite("CLI", () => {
         const cli: CLI = {
             binName: "talon-fmt",
             fileEndings: ["txt"],
+            supportedFlagArgs: ["--indent-tabs"],
+            supportedValueArgs: ["--indent-width", "--column-width"],
             format: (text, receivedOptions, receivedFileName) => {
                 actualText = text;
                 actualOptions = receivedOptions;
@@ -232,7 +237,10 @@ suite("CLI", () => {
             filePatterns: ["a.txt", "b.txt"],
             check: true,
         });
-        const actual = parseArgs(["--check", "a.txt", "b.txt"]);
+        const actual = parseArgs(
+            createCLI(() => ""),
+            ["--check", "a.txt", "b.txt"],
+        );
 
         assert.deepEqual(actual, expected);
     });
@@ -242,7 +250,10 @@ suite("CLI", () => {
             filePatterns: ["--check"],
             check: true,
         });
-        const actual = parseArgs(["--check", "--", "--check"]);
+        const actual = parseArgs(
+            createCLI(() => ""),
+            ["--check", "--", "--check"],
+        );
 
         assert.deepEqual(actual, expected);
     });
@@ -258,38 +269,132 @@ suite("CLI", () => {
             lineWidth: 80,
             columnWidth: 24,
         });
-        const actual = parseArgs([
-            "--indent-tabs",
-            "--indent-width",
-            "2",
-            "--line-width",
-            "80",
-            "--column-width",
-            "24",
-            "a.txt",
-        ]);
+        const actual = parseArgs(
+            createCLI(() => ""),
+            [
+                "--indent-tabs",
+                "--indent-width",
+                "2",
+                "--column-width",
+                "24",
+                "a.txt",
+            ],
+        );
 
         assert.deepEqual(actual, expected);
     });
 
+    test("rejects unsupported formatter arguments", () => {
+        const snippetCli: CLI = {
+            ...createCLI(() => ""),
+            binName: "snippet-fmt",
+            supportedFlagArgs: [],
+            supportedValueArgs: [],
+        };
+
+        assert.throws(
+            () => parseArgs(snippetCli, ["--indent-width", "2"]),
+            /Unknown argument: --indent-width/,
+        );
+    });
+
+    test("rejects unsupported formatter flags", () => {
+        const snippetCli: CLI = {
+            ...createCLI(() => ""),
+            binName: "snippet-fmt",
+            supportedFlagArgs: [],
+        };
+
+        assert.throws(
+            () => parseArgs(snippetCli, ["--indent-tabs"]),
+            /Unknown argument: --indent-tabs/,
+        );
+    });
+
+    test("parses only supported arguments for current cli", () => {
+        const expected = getArguments({
+            filePatterns: ["a.txt"],
+            indentTabs: true,
+            indentWidth: 2,
+            columnWidth: 24,
+        });
+        const actual = parseArgs(
+            createCLI(() => ""),
+            [
+                "--indent-tabs",
+                "--indent-width",
+                "2",
+                "--column-width",
+                "24",
+                "a.txt",
+            ],
+        );
+
+        assert.deepEqual(actual, expected);
+    });
+
+    test("prints help only for supported arguments", async () => {
+        const cli: CLI = {
+            binName: "tree-sitter-fmt",
+            fileEndings: ["scm"],
+            supportedFlagArgs: ["--indent-tabs"],
+            supportedValueArgs: ["--indent-width"],
+            format: (text) => Promise.resolve(text),
+        };
+
+        const output = await captureStreamWrite(process.stdout, () => {
+            printHelp(cli);
+            return Promise.resolve();
+        });
+
+        assert.equal(
+            output.text,
+            [
+                "Usage: tree-sitter-fmt [options] [file/dir/glob ...]",
+                "",
+                "Flags:",
+                "  --help",
+                "  --version",
+                "  --check",
+                "  --indent-tabs",
+                "",
+                "Options:",
+                "  --indent-width <n>",
+                "",
+            ].join("\n"),
+        );
+    });
+
     test("rejects unknown arguments", () => {
         assert.throws(
-            () => parseArgs(["--check", "--write"]),
+            () =>
+                parseArgs(
+                    createCLI(() => ""),
+                    ["--check", "--write"],
+                ),
             /Unknown argument: --write/,
         );
     });
 
     test("rejects missing width values", () => {
         assert.throws(
-            () => parseArgs(["--indent-width"]),
+            () =>
+                parseArgs(
+                    createCLI(() => ""),
+                    ["--indent-width"],
+                ),
             /Missing value for argument: --indent-width/,
         );
     });
 
     test("rejects invalid width values", () => {
         assert.throws(
-            () => parseArgs(["--line-width", "0"]),
-            /Invalid value for --line-width: 0/,
+            () =>
+                parseArgs(
+                    createCLI(() => ""),
+                    ["--indent-width", "0"],
+                ),
+            /Invalid value for --indent-width: 0/,
         );
     });
 });
@@ -313,6 +418,8 @@ function createCLI(format: (text: string) => string | Promise<string>): CLI {
     return {
         binName: "talon-fmt" as const,
         fileEndings: ["txt"],
+        supportedFlagArgs: ["--indent-tabs"],
+        supportedValueArgs: ["--indent-width", "--column-width"],
         format: (text: string) => Promise.resolve(format(text)),
     };
 }

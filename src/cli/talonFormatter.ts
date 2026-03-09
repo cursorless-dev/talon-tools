@@ -8,6 +8,8 @@ import { main } from "./cli.js";
 void main({
     binName: "talon-fmt",
     fileEndings: ["talon", "talon-list"],
+    supportedFlagArgs: ["--indent-tabs"],
+    supportedValueArgs: ["--indent-width", "--column-width"],
 
     format: async (text, options, fileName) => {
         if (isListFile(text, fileName)) {

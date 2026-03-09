@@ -55,7 +55,7 @@ export async function parseFilePatterns(
     return Array.from(seen).sort((a, b) => a.localeCompare(b));
 }
 
-function getGlobFileEndingsPattern(fileEndings: string[]): string {
+function getGlobFileEndingsPattern(fileEndings: readonly string[]): string {
     return fileEndings.length === 1
         ? fileEndings[0]
         : `{${fileEndings.join(",")}}`;
