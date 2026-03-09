@@ -42,7 +42,7 @@ async function mainUnsafe(cli: CLI): Promise<number> {
     // If no file patterns are provided, check if there's input from stdin.
     // If stdin TTY it's an interactive terminal, so we shouldn't read from it.
     if (!process.stdin.isTTY) {
-        return mainFormatStdin(cli, args.check);
+        return mainFormatStdin(cli, process.stdin, args.check);
     }
 
     throw new Error(
@@ -53,7 +53,7 @@ async function mainUnsafe(cli: CLI): Promise<number> {
 async function mainFormatFiles(
     cli: CLI,
     filePatterns: string[],
-    check: boolean = false,
+    check: boolean,
 ): Promise<number> {
     if (check) {
         console.log("Checking formatting...");
@@ -85,7 +85,7 @@ async function mainFormatFiles(
 export async function formatFiles(
     cli: CLI,
     filePatterns: string[],
-    check: boolean = false,
+    check: boolean,
 ): Promise<number> {
     let changedFileCount = 0;
 
@@ -101,7 +101,7 @@ export async function formatFiles(
 export async function formatFile(
     cli: CLI,
     fileName: string,
-    check: boolean = false,
+    check: boolean,
 ): Promise<boolean> {
     try {
         const content = await fs.readFile(fileName, "utf8");
@@ -135,8 +135,8 @@ export async function formatFile(
 
 export async function mainFormatStdin(
     cli: CLI,
+    stdin: Readable,
     check: boolean,
-    stdin: Readable = process.stdin,
 ): Promise<number> {
     const input = await getStdin({ stdin });
     const formatted = await cli.format(input, "stdin");

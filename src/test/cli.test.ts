@@ -18,7 +18,7 @@ suite("CLI", () => {
         const cli = createCLI((text) => `${text} updated`);
 
         try {
-            const didChange = await formatFile(cli, fileName);
+            const didChange = await formatFile(cli, fileName, false);
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -59,10 +59,11 @@ suite("CLI", () => {
             await fs.writeFile(unchangedFileName, "unchanged", "utf8");
             await fs.writeFile(changedFileName, "changed", "utf8");
 
-            const changedFileCount = await formatFiles(cli, [
-                unchangedFileName,
-                changedFileName,
-            ]);
+            const changedFileCount = await formatFiles(
+                cli,
+                [unchangedFileName, changedFileName],
+                false,
+            );
             const unchangedContent = await fs.readFile(
                 unchangedFileName,
                 "utf8",
@@ -81,7 +82,7 @@ suite("CLI", () => {
         const fileName = path.join(os.tmpdir(), "talonfmt-missing.txt");
         const cli = createCLI((text) => `${text} updated`);
 
-        const didChange = await formatFile(cli, fileName);
+        const didChange = await formatFile(cli, fileName, false);
 
         assert.equal(didChange, false);
     });
@@ -98,7 +99,7 @@ suite("CLI", () => {
 
         try {
             await assert.rejects(
-                formatFile(cli, fileName),
+                formatFile(cli, fileName, false),
                 /Failed to format '.*example\.txt': boom/,
             );
         } finally {
@@ -203,7 +204,7 @@ async function readAndFormatStdin(
 ): Promise<number> {
     const stdin = new PassThrough();
     Object.defineProperty(stdin, "isTTY", { value: false });
-    const result = mainFormatStdin(cli, check, stdin);
+    const result = mainFormatStdin(cli, stdin, check);
     stdin.end(input);
     return result;
 }
