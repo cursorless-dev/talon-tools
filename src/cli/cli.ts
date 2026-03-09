@@ -4,9 +4,11 @@ import type { CLI } from "../types.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
 
-export async function main(cli: CLI) {
+export async function run(cli: CLI): Promise<void> {
     try {
-        return await mainUnsafe(cli);
+        const argv = process.argv.slice(2);
+        const exitCode = await main(cli, argv);
+        process.exit(exitCode);
     } catch (error) {
         console.error(getErrorMessage(error));
         // Exit code 2: Unexpected error
@@ -14,12 +16,12 @@ export async function main(cli: CLI) {
     }
 }
 
-async function mainUnsafe(cli: CLI) {
-    const args = parseArgs(process.argv.slice(2));
+async function main(cli: CLI, argv: string[]): Promise<number> {
+    const args = parseArgs(argv);
 
     if (args.help) {
         printHelp(cli);
-        return;
+        return 0;
     }
 
     if (args.check) {
@@ -34,11 +36,11 @@ async function mainUnsafe(cli: CLI) {
                 `[warn] Code style issues found in ${changedFileCount} file(s).`,
             );
             // Exit code 1: Check failed
-            process.exit(1);
+            return 1;
         }
 
         console.log("All matched files use correct code style!");
-        return;
+        return 0;
     }
 
     if (changedFileCount > 0) {
@@ -46,6 +48,8 @@ async function mainUnsafe(cli: CLI) {
     } else {
         console.log("All files are already formatted.");
     }
+
+    return 0;
 }
 
 export async function formatFiles(
