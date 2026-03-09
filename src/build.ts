@@ -13,10 +13,9 @@ export async function build() {
 
         entryPoints: {
             lib: "src/lib/index.ts",
+            snippetFormatter: "src/cli/snippetFormatter.ts",
             talonFormatter: "src/cli/talonFormatter.ts",
-            talonListFormatter: "src/cli/talonListFormatter.ts",
-            talonSnippetFormatter: "src/cli/talonSnippetFormatter.ts",
-            treeSitterQueryFormatter: "src/cli/treeSitterQueryFormatter.ts",
+            treeSitterFormatter: "src/cli/treeSitterFormatter.ts",
         },
     });
 }
