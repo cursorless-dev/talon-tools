@@ -2,6 +2,7 @@ import type { Options } from "fast-glob";
 import fastGlob from "fast-glob";
 import * as path from "node:path";
 import type { CLI } from "../types.js";
+import { GLOB_IGNORE_PATTERNS } from "./constants.js";
 import { lstatSafe } from "./lstatSafe.js";
 import { normalizeToPosix } from "./normalizeToPosix.js";
 
@@ -15,6 +16,7 @@ export async function parseFilePatterns(
     const globOptions: Options = {
         dot: true,
         followSymbolicLinks: false,
+        ignore: GLOB_IGNORE_PATTERNS,
     };
 
     for (const pattern of filePatterns) {

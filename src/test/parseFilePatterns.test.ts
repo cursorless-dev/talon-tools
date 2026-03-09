@@ -6,7 +6,7 @@ import { parseFilePatterns } from "../util/parseFilePatterns.js";
 import type { CLI } from "../types.js";
 
 suite("parseFilePatterns", () => {
-    test("returns explicit files as absolute paths", async () => {
+    test("Returns explicit files as absolute paths", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
 
@@ -23,7 +23,7 @@ suite("parseFilePatterns", () => {
         }
     });
 
-    test("expands directories and filters by supported endings", async () => {
+    test("Expands directories and filters by supported endings", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
 
@@ -50,7 +50,35 @@ suite("parseFilePatterns", () => {
         }
     });
 
-    test("expands glob patterns", async () => {
+    test("Ignores hardcoded directories during directory expansion", async () => {
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            await fs.mkdir(path.join(directory, "nested"));
+            await fs.mkdir(path.join(directory, "node_modules"));
+            await fs.writeFile(
+                path.join(directory, "nested", "one.txt"),
+                "one",
+            );
+            await fs.writeFile(
+                path.join(directory, "node_modules", "ignored.txt"),
+                "ignored",
+            );
+            process.chdir(directory);
+
+            const files = await parseFilePatterns(createCLI(), ["."]);
+
+            assert.deepEqual(files, [
+                path.join(directory, "nested", "one.txt"),
+            ]);
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
+
+    test("Expands glob patterns", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
 
@@ -76,7 +104,7 @@ suite("parseFilePatterns", () => {
         }
     });
 
-    test("expands Windows-style glob patterns on Windows", async function () {
+    test("Expands Windows-style glob patterns on Windows", async function () {
         if (path.sep !== "\\") {
             this.skip();
             return;
@@ -107,7 +135,7 @@ suite("parseFilePatterns", () => {
         }
     });
 
-    test("deduplicates overlapping patterns", async () => {
+    test("Deduplicates overlapping patterns", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
 
@@ -127,7 +155,7 @@ suite("parseFilePatterns", () => {
         }
     });
 
-    test("rejects symbolic links", async function () {
+    test("Rejects symbolic links", async function () {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
 

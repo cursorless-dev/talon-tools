@@ -7,3 +7,11 @@ export const EXIT_ERROR = 2;
 
 export const DEFAULT_INDENT_WIDTH = 4;
 export const DEFAULT_LINE_WIDTH = 80;
+
+export const GLOB_IGNORE_PATTERNS = [
+    "**/.git/**",
+    "**/.svn/**",
+    "**/.hg/**",
+    "**/node_modules/**",
+    "**/__pycache__/**",
+];
