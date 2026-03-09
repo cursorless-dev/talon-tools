@@ -61,12 +61,10 @@ suite("CLI", () => {
             await fs.writeFile(unchangedFileName, "unchanged", "utf8");
             await fs.writeFile(changedFileName, "changed", "utf8");
 
-            const changedFileCount = await formatFiles(
-                cli,
-                [unchangedFileName, changedFileName],
-                false,
-                {},
-            );
+            const changedFileCount = await formatFiles(cli, false, {}, [
+                unchangedFileName,
+                changedFileName,
+            ]);
             const unchangedContent = await fs.readFile(
                 unchangedFileName,
                 "utf8",
