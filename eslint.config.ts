@@ -24,6 +24,7 @@ export default defineConfig(
                 "warn",
                 {
                     argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
                     caughtErrorsIgnorePattern: "^_",
                 },
             ],

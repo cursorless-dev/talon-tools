@@ -1,17 +1,23 @@
 import type { Node } from "web-tree-sitter";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getIndentation } from "../util/getIndentation.js";
+import { DEFAULT_LINE_WIDTH } from "../util/constants.js";
 
 interface Options {
     readonly indentTabs?: boolean;
     readonly indentWidth?: number;
+    readonly lineWidth?: number;
     readonly columnWidth?: number;
 }
 
 export function talonFormatter(node: Node, options: Options = {}): string {
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
     const indentation = getIndentation(options.indentTabs, options.indentWidth);
-    const formatter = new TalonFormatter(indentation, columnWidth);
+    const formatter = new TalonFormatter(
+        indentation,
+        options.lineWidth ?? DEFAULT_LINE_WIDTH,
+        columnWidth,
+    );
     return formatter.getText(node);
 }
 
@@ -20,6 +26,7 @@ class TalonFormatter {
 
     constructor(
         private indent: string,
+        private lineWidth: number,
         private columnWidth: number | undefined,
     ) {}
 
@@ -28,26 +35,26 @@ class TalonFormatter {
     }
 
     private getLeftRightText(node: Node): string {
-        const { children } = node;
-        const isMultiline =
-            children[2].startPosition.row > children[1].endPosition.row;
-        const left = this.getNodeText(children[0]);
-        const leftWithColon = `${left}:`;
-        const leftWithPadding = (() => {
-            if (isMultiline) {
-                return leftWithColon;
+        const [leftNode, _colonNode, ...rightNodes] = node.children;
+        const left = this.getNodeText(leftNode);
+
+        if (rightNodes.length === 1) {
+            if (isLeftRightSingleLine(leftNode, rightNodes)) {
+                const right = this.getNodeText(rightNodes[0]);
+                const leftWithPadding =
+                    this.columnWidth != null
+                        ? `${left}: `.padEnd(this.columnWidth)
+                        : `${left}: `;
+                if (leftWithPadding.length + right.length <= this.lineWidth) {
+                    return leftWithPadding + right;
+                }
             }
-            if (this.columnWidth == null) {
-                return `${leftWithColon} `;
-            }
-            return `${leftWithColon} `.padEnd(this.columnWidth);
-        })();
-        const nl = isMultiline ? "\n" : "";
-        const right = children
-            .slice(2)
-            .map((n) => this.getNodeText(n, isMultiline))
+        }
+
+        const right = rightNodes
+            .map((n) => this.getNodeText(n, true))
             .join("\n");
-        return `${leftWithPadding}${nl}${right}`;
+        return `${left}:\n${right}`;
     }
 
     private getNodeText(node: Node, isIndented = false): string {
@@ -184,4 +191,8 @@ class TalonFormatter {
                 return node.text;
         }
     }
+}
+
+function isLeftRightSingleLine(left: Node, rights: Node[]): boolean {
+    return left.endPosition.row === rights[rights.length - 1].startPosition.row;
 }

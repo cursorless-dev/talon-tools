@@ -35,7 +35,7 @@
         "build": "tsc -p . && tsx ./src/build.ts",
         "clean": "rm -rf out",
         "lint": "npm run lint:ts &&npm run lint:fmt",
-        "lint:ts": "eslint src",
+        "lint:ts": "tsc -p . --noEmit && eslint src",
         "lint:fmt": "prettier --check .",
         "fix": "npm run fix:ts && npm run fix:fmt",
         "fix:ts": "eslint src --fix",

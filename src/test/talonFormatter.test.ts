@@ -186,7 +186,7 @@ suite("Talon formatter", () => {
         });
     }
 
-    test("uses tabs for indented command blocks", async () => {
+    test("Uses tabs for indented command blocks", async () => {
         const rootNode = await parseText(
             "foo:\n  edit.left()",
             "tree-sitter-talon",
@@ -197,6 +197,25 @@ suite("Talon formatter", () => {
         });
 
         assert.equal(actual, "foo:\n\tedit.left()\n");
+    });
+
+    test("Breaks long inline declarations when column width is unset", async () => {
+        const rootNode = await parseText("aaa: bbb", "tree-sitter-talon");
+
+        const actual = talonFormatter(rootNode, {
+            lineWidth: 7,
+        });
+
+        assert.equal(actual, "aaa:\n    bbb\n");
+    });
+
+    test("Breaks long inline declarations at the default line width", async () => {
+        const right = `"${"a".repeat(76)}"`;
+        const rootNode = await parseText(`foo: ${right}`, "tree-sitter-talon");
+
+        const actual = talonFormatter(rootNode);
+
+        assert.equal(actual, `foo:\n    ${right}\n`);
     });
 });
 

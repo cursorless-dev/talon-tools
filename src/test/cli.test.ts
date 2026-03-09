@@ -11,7 +11,7 @@ import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
 
 suite("CLI", () => {
-    test("formats a file in place", async () => {
+    test("Formats a file in place", async () => {
         const fileName = await createTempFile(
             "talonfmt-",
             "example.txt",
@@ -30,7 +30,7 @@ suite("CLI", () => {
         }
     });
 
-    test("reports changes without writing in check mode", async () => {
+    test("Reports changes without writing in check mode", async () => {
         const fileName = await createTempFile(
             "talonfmt-",
             "example.txt",
@@ -49,7 +49,7 @@ suite("CLI", () => {
         }
     });
 
-    test("counts only changed files", async () => {
+    test("Counts only changed files", async () => {
         const directory = await fs.mkdtemp(path.join(os.tmpdir(), "talonfmt-"));
         const unchangedFileName = path.join(directory, "unchanged.txt");
         const changedFileName = path.join(directory, "changed.txt");
@@ -81,7 +81,7 @@ suite("CLI", () => {
         }
     });
 
-    test("ignores missing files", async () => {
+    test("Ignores missing files", async () => {
         const fileName = path.join(os.tmpdir(), "talonfmt-missing.txt");
         const cli = createCLI((text) => `${text} updated`);
 
@@ -90,7 +90,7 @@ suite("CLI", () => {
         assert.equal(didChange, false);
     });
 
-    test("wraps formatter errors", async () => {
+    test("Wraps formatter errors", async () => {
         const fileName = await createTempFile(
             "talonfmt-",
             "example.txt",
@@ -110,7 +110,7 @@ suite("CLI", () => {
         }
     });
 
-    test("writes formatted stdin to stdout", async () => {
+    test("Writes formatted stdin to stdout", async () => {
         const cli = createCLI((text) => `${text} updated`);
         const output = await captureStreamWrite(process.stdout, async () =>
             readAndFormatStdin(cli, "content"),
@@ -120,7 +120,7 @@ suite("CLI", () => {
         assert.equal(output.text, "content updated");
     });
 
-    test("reports stdin formatting issues to stderr in check mode", async () => {
+    test("Reports stdin formatting issues to stderr in check mode", async () => {
         const cli = createCLI((text) => `${text} updated`);
         const output = await captureStreamWrite(process.stderr, async () =>
             readAndFormatStdin(cli, "content", true),
@@ -130,7 +130,7 @@ suite("CLI", () => {
         assert.equal(output.text, "[warn] Code style issues found in stdin.");
     });
 
-    test("returns success for unchanged stdin in check mode", async () => {
+    test("Returns success for unchanged stdin in check mode", async () => {
         const cli = createCLI((text) => text);
         const stderr = await captureStreamWrite(process.stderr, async () =>
             readAndFormatStdin(cli, "content", true),
@@ -145,7 +145,7 @@ suite("CLI", () => {
         assert.equal(stdout.text, "");
     });
 
-    test("passes options and file name to file formatter", async () => {
+    test("Passes options and file name to file formatter", async () => {
         const fileName = await createTempFile(
             "talonfmt-",
             "example.txt",
@@ -183,7 +183,7 @@ suite("CLI", () => {
         }
     });
 
-    test("passes options and stdin file name to stdin formatter", async () => {
+    test("Passes options and stdin file name to stdin formatter", async () => {
         const options = {
             indentTabs: true,
             indentWidth: 2,
@@ -212,7 +212,7 @@ suite("CLI", () => {
         assert.equal(actualFileName, "stdin");
     });
 
-    test("parses check mode", () => {
+    test("Parses check mode", () => {
         const expected = getArguments({
             filePatterns: ["a.txt", "b.txt"],
             check: true,
@@ -225,7 +225,7 @@ suite("CLI", () => {
         assert.deepEqual(actual, expected);
     });
 
-    test("parses check mode and end-of-options marker", () => {
+    test("Parses check mode and end-of-options marker", () => {
         const expected = getArguments({
             filePatterns: ["--check"],
             check: true,
@@ -238,7 +238,7 @@ suite("CLI", () => {
         assert.deepEqual(actual, expected);
     });
 
-    test("parses tabs and width arguments", () => {
+    test("Parses tabs and width arguments", () => {
         const expected = getArguments({
             filePatterns: ["a.txt"],
             help: false,
@@ -246,7 +246,7 @@ suite("CLI", () => {
             check: false,
             indentTabs: true,
             indentWidth: 2,
-            lineWidth: undefined,
+            lineWidth: 40,
             columnWidth: 24,
         });
         const actual = parseArgs(
@@ -255,6 +255,8 @@ suite("CLI", () => {
                 "--indent-tabs",
                 "--indent-width",
                 "2",
+                "--line-width",
+                "40",
                 "--column-width",
                 "24",
                 "a.txt",
@@ -264,7 +266,7 @@ suite("CLI", () => {
         assert.deepEqual(actual, expected);
     });
 
-    test("rejects unsupported formatter arguments", () => {
+    test("Rejects unsupported formatter arguments", () => {
         const snippetCli: CLI = {
             ...createCLI(() => ""),
             binName: "snippet-fmt",
@@ -278,7 +280,7 @@ suite("CLI", () => {
         );
     });
 
-    test("rejects unsupported formatter flags", () => {
+    test("Rejects unsupported formatter flags", () => {
         const snippetCli: CLI = {
             ...createCLI(() => ""),
             binName: "snippet-fmt",
@@ -291,7 +293,7 @@ suite("CLI", () => {
         );
     });
 
-    test("parses only supported arguments for current cli", () => {
+    test("Parses only supported arguments for current cli", () => {
         const expected = getArguments({
             filePatterns: ["a.txt"],
             indentTabs: true,
@@ -313,7 +315,7 @@ suite("CLI", () => {
         assert.deepEqual(actual, expected);
     });
 
-    test("prints help only for supported arguments", async () => {
+    test("Prints help only for supported arguments", async () => {
         const cli: CLI = {
             binName: "tree-sitter-fmt",
             fileEndings: ["scm"],
@@ -345,7 +347,7 @@ suite("CLI", () => {
         );
     });
 
-    test("rejects unknown arguments", () => {
+    test("Rejects unknown arguments", () => {
         assert.throws(
             () =>
                 parseArgs(
@@ -356,7 +358,7 @@ suite("CLI", () => {
         );
     });
 
-    test("rejects missing width values", () => {
+    test("Rejects missing width values", () => {
         assert.throws(
             () =>
                 parseArgs(
@@ -367,7 +369,7 @@ suite("CLI", () => {
         );
     });
 
-    test("rejects invalid width values", () => {
+    test("Rejects invalid width values", () => {
         assert.throws(
             () =>
                 parseArgs(
@@ -399,7 +401,11 @@ function createCLI(format: (text: string) => string | Promise<string>): CLI {
         binName: "talon-fmt" as const,
         fileEndings: ["txt"],
         supportedFlagArgs: ["--indent-tabs"],
-        supportedValueArgs: ["--indent-width", "--column-width"],
+        supportedValueArgs: [
+            "--indent-width",
+            "--line-width",
+            "--column-width",
+        ],
         format: (text: string) => Promise.resolve(format(text)),
     };
 }
