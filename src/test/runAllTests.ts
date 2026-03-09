@@ -3,9 +3,18 @@ import Mocha from "mocha";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
+const grep = `
+// Formats a file in place
+`
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith("//"))
+    .join("|");
+
 const mocha = new Mocha({
     ui: "tdd",
     color: true,
+    grep: grep || undefined,
 });
 
 const cwd = path.dirname(fileURLToPath(import.meta.url));
