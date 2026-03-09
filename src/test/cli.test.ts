@@ -108,6 +108,7 @@ suite("CLI", () => {
         const expected: ParsedArgs = {
             filePatterns: ["a.txt", "b.txt"],
             help: false,
+            version: false,
             check: true,
         };
         const actual = parseArgs(["--check", "a.txt", "b.txt"]);
@@ -119,6 +120,7 @@ suite("CLI", () => {
         const expected: ParsedArgs = {
             filePatterns: ["--check"],
             help: false,
+            version: false,
             check: true,
         };
         const actual = parseArgs(["--check", "--", "--check"]);

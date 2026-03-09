@@ -7,5 +7,6 @@ export interface CLI {
 export interface ParsedArgs {
     filePatterns: string[];
     help: boolean;
+    version: boolean;
     check: boolean;
 }

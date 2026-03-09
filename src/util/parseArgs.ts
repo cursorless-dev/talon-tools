@@ -2,7 +2,7 @@
 
 import type { ParsedArgs } from "../types.js";
 
-export const KNOWN_ARGUMENTS = ["--help", "--check"] as const;
+export const KNOWN_ARGUMENTS = ["--help", "--version", "--check"] as const;
 
 type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
 type ArgHandler = (parsedArgs: ParsedArgs) => void;
@@ -10,6 +10,9 @@ type ArgHandler = (parsedArgs: ParsedArgs) => void;
 const ARG_HANDLERS: Record<KnownArgument, ArgHandler> = {
     "--help": (parsedArgs) => {
         parsedArgs.help = true;
+    },
+    "--version": (parsedArgs) => {
+        parsedArgs.version = true;
     },
     "--check": (parsedArgs) => {
         parsedArgs.check = true;
@@ -20,6 +23,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     const result: ParsedArgs = {
         filePatterns: [],
         help: false,
+        version: false,
         check: false,
     };
 

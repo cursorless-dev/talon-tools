@@ -5,6 +5,7 @@
         "moduleResolution": "nodenext",
         "rootDir": "src",
         "esModuleInterop": true,
+        "resolveJsonModule": true,
         "noEmit": true,
         "strict": true,
         "noImplicitAny": true,

@@ -5,6 +5,7 @@ import type { CLI } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
+import { printVersion } from "../util/printVersion.js";
 
 export async function main(cli: CLI): Promise<void> {
     try {
@@ -21,6 +22,11 @@ async function mainUnsafe(cli: CLI): Promise<number> {
 
     if (args.help) {
         printHelp(cli);
+        return EXIT_OK;
+    }
+
+    if (args.version) {
+        printVersion();
         return EXIT_OK;
     }
 
