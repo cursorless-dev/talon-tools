@@ -22,6 +22,24 @@ tree-sitter-fmt [options] [file/dir/glob ...]
 | `--line-width <n>`   | Set preferred maximum line width | `80`    |
 | `--column-width <n>` | Set aligned left-column width    |         |
 
+Use `--` to mark the end of options. Any following arguments are treated as
+file, directory, or glob patterns even if they start with `--`.
+
+```sh
+talon-fmt -- --check
+```
+
+### Column width comment
+
+The column width option can be enabled on a per file basis using a fmt comment.
+
+```talon
+# fmt: columnWidth=15
+
+foo:           "foo"
+foo bar baz:   "foo bar baz"
+```
+
 ## Exit codes
 
 | Code | Information                         |
