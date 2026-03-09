@@ -68,7 +68,7 @@ export async function formatFile(
 ): Promise<boolean> {
     try {
         const content = await fs.readFile(fileName, "utf8");
-        const formatted = await cli.format(content);
+        const formatted = await cli.format(content, fileName);
 
         if (formatted === content) {
             return false;

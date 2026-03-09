@@ -1,11 +1,7 @@
 export interface CLI {
-    binName:
-        | "talon-fmt"
-        | "talon-list-fmt"
-        | "talon-snippet-fmt"
-        | "tree-sitter-query-fmt";
+    binName: "snippet-fmt" | "talon-fmt" | "tree-sitter-fmt";
 
-    format(text: string): Promise<string>;
+    format(text: string, fileName: string): Promise<string>;
 }
 
 export interface ParsedArgs {

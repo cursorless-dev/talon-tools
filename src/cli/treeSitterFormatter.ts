@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { treeSitterQueryFormatter } from "../lib/treeSitterQueryFormatter.js";
+import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
 import { main } from "./cli.js";
 import { indentation } from "./constants.js";
 
 void main({
-    binName: "tree-sitter-query-fmt",
+    binName: "tree-sitter-fmt",
 
     format: async (text: string) => {
         const node = await parseText(text, "tree-sitter-query");
-        return treeSitterQueryFormatter(node, { indentation });
+        return treeSitterFormatter(node, { indentation });
     },
 });

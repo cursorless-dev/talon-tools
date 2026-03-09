@@ -4,10 +4,7 @@ interface Properties {
     indentation: string;
 }
 
-export function treeSitterQueryFormatter(
-    node: Node,
-    props: Properties,
-): string {
+export function treeSitterFormatter(node: Node, props: Properties): string {
     const formatter = new TreeSitterFormatter(props.indentation);
     return formatter.getText(node);
 }

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { talonListFormatter } from "../lib/talonListFormatter.js";
+import { snippetFormatter } from "../lib/snippetFormatter.js";
 import { main } from "./cli.js";
 
 void main({
-    binName: "talon-list-fmt",
+    binName: "snippet-fmt",
 
     format: async (text: string) => {
-        const updated = talonListFormatter(text, {});
+        const updated = snippetFormatter(text);
         return Promise.resolve(updated);
     },
 });

@@ -12,10 +12,9 @@
         ".": "./out/lib.js"
     },
     "bin": {
+        "snippet-fmt": "./out/snippetFormatter.js",
         "talon-fmt": "./out/talonFormatter.js",
-        "talon-list-fmt": "./out/talonListFormatter.js",
-        "talon-snippet-fmt": "./out/talonSnippetFormatter.js",
-        "tree-sitter-query-fmt": "./out/treeSitterQueryFormatter.js"
+        "tree-sitter-fmt": "./out/treeSitterFormatter.js"
     },
     "repository": {
         "type": "git",

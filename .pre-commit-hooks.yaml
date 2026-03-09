@@ -1,23 +1,17 @@
+- id: snippet-fmt
+  name: Format snippet files
+  entry: snippet-fmt
+  language: node
+  files: \.snippet$
+
 - id: talon-fmt
   name: Format Talon files
   entry: talon-fmt
   language: node
-  files: \.talon$
+  files: \.(talon|talon-list)$
 
-- id: talon-list-fmt
-  name: Format Talon list files
-  entry: talon-list-fmt
-  language: node
-  files: \.talon-list$
-
-- id: talon-snippet-fmt
-  name: Format Talon snippet files
-  entry: talon-snippet-fmt
-  language: node
-  files: \.snippet$
-
-- id: tree-sitter-query-fmt
+- id: tree-sitter-fmt
   name: Format Tree-sitter query files
-  entry: tree-sitter-query-fmt
+  entry: tree-sitter-fmt
   language: node
   files: \.scm$

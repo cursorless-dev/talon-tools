@@ -39,7 +39,7 @@ export default defineConfig(
         },
     },
     {
-        files: ["eslint.config.ts", "src/typings/**/*"],
+        files: ["eslint.config.ts"],
         extends: [eslintTs.configs.disableTypeChecked],
     },
 );
