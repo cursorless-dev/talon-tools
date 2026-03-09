@@ -1,7 +1,6 @@
 import * as assert from "node:assert";
 import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
-import { getDefaultOptions } from "../util/getDefaultArguments.js";
 
 type Content = string | string[];
 
@@ -103,7 +102,7 @@ suite("Tree-sitter formatter", () => {
         test(fixture.title, async () => {
             const content = getContentString(fixture.pre);
             const rootNode = await parseText(content, "tree-sitter-query");
-            const actual = treeSitterFormatter(rootNode, getDefaultOptions());
+            const actual = treeSitterFormatter(rootNode, {});
             const expected = getContentString(fixture.post);
             assert.equal(actual, expected);
         });
@@ -113,7 +112,6 @@ suite("Tree-sitter formatter", () => {
         const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
 
         const actual = treeSitterFormatter(rootNode, {
-            ...getDefaultOptions(),
             indentTabs: true,
         });
 

@@ -1,6 +1,9 @@
-import type { Options } from "../types.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { parseTalonList } from "./parseTalonList.js";
+
+interface Options {
+    readonly columnWidth?: number;
+}
 
 export function talonListFormatter(text: string, options: Options): string {
     const columnWidth = getColumnWidth(text) ?? options.columnWidth;

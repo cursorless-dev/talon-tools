@@ -26,10 +26,10 @@ export interface CLI {
 }
 
 export interface Options {
-    indentTabs: boolean;
-    indentWidth: number;
-    lineWidth: number;
-    columnWidth: number | undefined;
+    indentTabs?: boolean;
+    indentWidth?: number;
+    lineWidth?: number;
+    columnWidth?: number;
 }
 
 export interface ParsedArgs extends Options {

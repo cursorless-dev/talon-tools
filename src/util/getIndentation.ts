@@ -1,5 +1,6 @@
-import type { Options } from "../types.js";
-
-export function getIndentation(options: Options): string {
-    return options.indentTabs ? "\t" : " ".repeat(options.indentWidth);
+export function getIndentation(
+    indentTabs: boolean | undefined,
+    indentWidth: number | undefined,
+): string {
+    return indentTabs ? "\t" : " ".repeat(indentWidth ?? 4);
 }
