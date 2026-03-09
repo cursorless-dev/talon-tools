@@ -8,7 +8,7 @@ interface Options {
     readonly columnWidth?: number;
 }
 
-export function talonFormatter(node: Node, options: Options): string {
+export function talonFormatter(node: Node, options: Options = {}): string {
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
     const indentation = getIndentation(options.indentTabs, options.indentWidth);
     const formatter = new TalonFormatter(indentation, columnWidth);

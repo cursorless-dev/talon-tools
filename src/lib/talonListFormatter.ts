@@ -5,7 +5,10 @@ interface Options {
     readonly columnWidth?: number;
 }
 
-export function talonListFormatter(text: string, options: Options): string {
+export function talonListFormatter(
+    text: string,
+    options: Options = {},
+): string {
     const columnWidth = getColumnWidth(text) ?? options.columnWidth;
     const talonList = parseTalonList(text);
     talonList.headers.sort((a, _b) =>

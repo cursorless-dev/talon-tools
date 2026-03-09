@@ -6,7 +6,7 @@ interface Options {
     readonly indentWidth?: number;
 }
 
-export function treeSitterFormatter(node: Node, options: Options): string {
+export function treeSitterFormatter(node: Node, options: Options = {}): string {
     const indentation = getIndentation(options.indentTabs, options.indentWidth);
     const formatter = new TreeSitterFormatter(indentation);
     return formatter.getText(node);
