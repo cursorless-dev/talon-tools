@@ -76,6 +76,37 @@ suite("parseFilePatterns", () => {
         }
     });
 
+    test("expands Windows-style glob patterns on Windows", async function () {
+        if (path.sep !== "\\") {
+            this.skip();
+            return;
+        }
+
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            await fs.mkdir(path.join(directory, "nested"));
+            await fs.writeFile(path.join(directory, "one.txt"), "one", "utf8");
+            await fs.writeFile(
+                path.join(directory, "nested", "two.txt"),
+                "two",
+                "utf8",
+            );
+            process.chdir(directory);
+
+            const files = await parseFilePatterns(createCLI(), ["**\\*.txt"]);
+
+            assert.deepEqual(files, [
+                path.join(directory, "nested", "two.txt"),
+                path.join(directory, "one.txt"),
+            ]);
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
+
     test("deduplicates overlapping patterns", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
