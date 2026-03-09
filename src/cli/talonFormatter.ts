@@ -10,7 +10,7 @@ void main({
     fileEndings: ["talon", "talon-list"],
 
     format: async (text, options, fileName) => {
-        if (fileName.endsWith(".talon-list")) {
+        if (isListFile(text, fileName)) {
             const updated = talonListFormatter(text, options);
             return Promise.resolve(updated);
         }
@@ -19,3 +19,13 @@ void main({
         return talonFormatter(node, options);
     },
 });
+
+function isListFile(text: string, fileName: string): boolean {
+    if (fileName.endsWith(".talon-list")) {
+        return true;
+    }
+    if (fileName.endsWith(".talon")) {
+        return false;
+    }
+    return text.startsWith("list:");
+}

@@ -15,6 +15,5 @@
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true
     },
-    "include": ["src"],
-    "exclude": ["src/test", "src/cli", "src/build.ts"]
+    "include": ["src"]
 }
