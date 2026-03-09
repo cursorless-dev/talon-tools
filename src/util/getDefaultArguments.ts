@@ -6,9 +6,5 @@ export function getDefaultArguments(): ParsedArgs {
         help: false,
         version: false,
         check: false,
-        indentTabs: undefined,
-        indentWidth: undefined,
-        lineWidth: undefined,
-        columnWidth: undefined,
     };
 }

@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const grep = `
-// Formats a file in place
+// .editorconfig
 `
     .split(/\r?\n/)
     .map((line) => line.trim())

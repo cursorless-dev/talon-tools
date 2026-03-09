@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
 import { formatFile, formatFiles, mainFormatStdin } from "../cli/cli.js";
-import type { CLI, Options, ParsedArgs } from "../types.js";
+import type {
+    CLI,
+    EditorConfigOptions,
+    Options,
+    ParsedArgs,
+} from "../types.js";
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { getDefaultArguments } from "../util/getDefaultArguments.js";
 import { parseArgs } from "../util/parseArgs.js";
@@ -20,7 +27,7 @@ suite("CLI", () => {
         const cli = createCLI((text) => `${text} updated`);
 
         try {
-            const didChange = await formatFile(cli, false, {}, fileName);
+            const didChange = await formatFile(cli, false, fileName);
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -39,7 +46,7 @@ suite("CLI", () => {
         const cli = createCLI((text) => `${text} updated`);
 
         try {
-            const didChange = await formatFile(cli, true, {}, fileName);
+            const didChange = await formatFile(cli, true, fileName);
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -61,7 +68,7 @@ suite("CLI", () => {
             await fs.writeFile(unchangedFileName, "unchanged", "utf8");
             await fs.writeFile(changedFileName, "changed", "utf8");
 
-            const changedFileCount = await formatFiles(cli, false, {}, [
+            const changedFileCount = await formatFiles(cli, false, [
                 unchangedFileName,
                 changedFileName,
             ]);
@@ -83,9 +90,86 @@ suite("CLI", () => {
         const fileName = path.join(os.tmpdir(), "talonfmt-missing.txt");
         const cli = createCLI((text) => `${text} updated`);
 
-        const didChange = await formatFile(cli, false, {}, fileName);
+        const didChange = await formatFile(cli, false, fileName);
 
         assert.equal(didChange, false);
+    });
+
+    test("Formats a file using settings from .editorconfig", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.talon",
+            "content",
+        );
+        const cli = createCLI(
+            (_text, options) => `indentWidth=${options.indentSize ?? "unset"}`,
+        );
+
+        try {
+            await writeEditorConfig(fileName, {
+                indent_size: 2,
+            });
+
+            const didChange = await formatFile(cli, false, fileName);
+            const actual = await fs.readFile(fileName, "utf8");
+
+            assert.equal(didChange, true);
+            assert.equal(actual, "indentWidth=2");
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("Uses tab_width when indent_size is tab", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.talon",
+            "content",
+        );
+        const cli = createCLI(
+            (_text, options) => `indentWidth=${options.indentSize ?? "unset"}`,
+        );
+
+        try {
+            await writeEditorConfig(fileName, {
+                indent_size: "tab",
+                tab_width: 3,
+            });
+
+            const didChange = await formatFile(cli, false, fileName);
+            const actual = await fs.readFile(fileName, "utf8");
+
+            assert.equal(didChange, true);
+            assert.equal(actual, "indentWidth=3");
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("Passes max line length from .editorconfig", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.talon",
+            "content",
+        );
+        const cli = createCLI(
+            (_text, options) =>
+                `maxLineLength=${options.maxLineLength ?? "unset"}`,
+        );
+
+        try {
+            await writeEditorConfig(fileName, {
+                max_line_length: 80,
+            });
+
+            const didChange = await formatFile(cli, false, fileName);
+            const actual = await fs.readFile(fileName, "utf8");
+
+            assert.equal(didChange, true);
+            assert.equal(actual, "maxLineLength=80");
+        } finally {
+            await cleanupTempFile(fileName);
+        }
     });
 
     test("Wraps formatter errors", async () => {
@@ -100,7 +184,7 @@ suite("CLI", () => {
 
         try {
             await assert.rejects(
-                formatFile(cli, false, {}, fileName),
+                formatFile(cli, false, fileName),
                 /Failed to format '.*example\.txt': boom/,
             );
         } finally {
@@ -149,9 +233,9 @@ suite("CLI", () => {
             "example.txt",
             "content",
         );
-        const options = {
+        const expectedOptions = {
             indentTabs: true,
-            indentWidth: 2,
+            indentSize: 2,
             columnWidth: 24,
         };
         let actualText: string | undefined;
@@ -160,8 +244,7 @@ suite("CLI", () => {
         const cli: CLI = {
             binName: "talon-fmt",
             fileEndings: ["txt"],
-            supportedFlagArgs: ["--indent-tabs"],
-            supportedValueArgs: ["--indent-width", "--column-width"],
+            getStdinFileEnding: () => "txt",
             format: (text, receivedOptions, receivedFileName) => {
                 actualText = text;
                 actualOptions = receivedOptions;
@@ -171,10 +254,15 @@ suite("CLI", () => {
         };
 
         try {
-            await formatFile(cli, false, options, fileName);
+            await writeEditorConfig(fileName, {
+                indent_style: "tab",
+                indent_size: 2,
+                column_width: 24,
+            });
+            await formatFile(cli, false, fileName);
 
             assert.equal(actualText, "content");
-            assert.deepEqual(actualOptions, options);
+            assert.deepEqual(actualOptions, expectedOptions);
             assert.equal(actualFileName, fileName);
         } finally {
             await cleanupTempFile(fileName);
@@ -184,16 +272,17 @@ suite("CLI", () => {
     test("Passes options and stdin file name to stdin formatter", async () => {
         const options = {
             indentTabs: true,
-            indentWidth: 2,
+            indentSize: 2,
         };
         let actualText: string | undefined;
         let actualOptions: Options | undefined;
         let actualFileName: string | undefined;
+        const directory = await fs.mkdtemp(path.join(os.tmpdir(), "talonfmt-"));
+        const cwd = process.cwd();
         const cli: CLI = {
             binName: "talon-fmt",
             fileEndings: ["txt"],
-            supportedFlagArgs: ["--indent-tabs"],
-            supportedValueArgs: ["--indent-width", "--column-width"],
+            getStdinFileEnding: () => "txt",
             format: (text, receivedOptions, receivedFileName) => {
                 actualText = text;
                 actualOptions = receivedOptions;
@@ -202,12 +291,23 @@ suite("CLI", () => {
             },
         };
 
-        const result = await readAndFormatStdin(cli, "content", false, options);
+        try {
+            process.chdir(directory);
+            await writeEditorConfig(path.join(directory, "stdin.txt"), {
+                indent_style: "tab",
+                indent_size: 2,
+            });
 
-        assert.equal(result, EXIT_OK);
-        assert.equal(actualText, "content");
-        assert.deepEqual(actualOptions, options);
-        assert.equal(actualFileName, "stdin");
+            const result = await readAndFormatStdin(cli, "content", false);
+
+            assert.equal(result, EXIT_OK);
+            assert.equal(actualText, "content");
+            assert.deepEqual(actualOptions, options);
+            assert.equal(actualFileName, path.join(directory, "stdin.txt"));
+        } finally {
+            process.chdir(cwd);
+            await fs.rm(directory, { recursive: true, force: true });
+        }
     });
 
     test("Parses check mode", () => {
@@ -215,10 +315,7 @@ suite("CLI", () => {
             filePatterns: ["a.txt", "b.txt"],
             check: true,
         });
-        const actual = parseArgs(
-            createCLI(() => ""),
-            ["--check", "a.txt", "b.txt"],
-        );
+        const actual = parseArgs(["--check", "a.txt", "b.txt"]);
 
         assert.deepEqual(actual, expected);
     });
@@ -228,87 +325,7 @@ suite("CLI", () => {
             filePatterns: ["--check"],
             check: true,
         });
-        const actual = parseArgs(
-            createCLI(() => ""),
-            ["--check", "--", "--check"],
-        );
-
-        assert.deepEqual(actual, expected);
-    });
-
-    test("Parses tabs and width arguments", () => {
-        const expected = getArguments({
-            filePatterns: ["a.txt"],
-            help: false,
-            version: false,
-            check: false,
-            indentTabs: true,
-            indentWidth: 2,
-            lineWidth: 40,
-            columnWidth: 24,
-        });
-        const actual = parseArgs(
-            createCLI(() => ""),
-            [
-                "--indent-tabs",
-                "--indent-width",
-                "2",
-                "--line-width",
-                "40",
-                "--column-width",
-                "24",
-                "a.txt",
-            ],
-        );
-
-        assert.deepEqual(actual, expected);
-    });
-
-    test("Rejects unsupported formatter arguments", () => {
-        const snippetCli: CLI = {
-            ...createCLI(() => ""),
-            binName: "snippet-fmt",
-            supportedFlagArgs: [],
-            supportedValueArgs: [],
-        };
-
-        assert.throws(
-            () => parseArgs(snippetCli, ["--indent-width", "2"]),
-            /Unknown argument: --indent-width/,
-        );
-    });
-
-    test("Rejects unsupported formatter flags", () => {
-        const snippetCli: CLI = {
-            ...createCLI(() => ""),
-            binName: "snippet-fmt",
-            supportedFlagArgs: [],
-        };
-
-        assert.throws(
-            () => parseArgs(snippetCli, ["--indent-tabs"]),
-            /Unknown argument: --indent-tabs/,
-        );
-    });
-
-    test("Parses only supported arguments for current cli", () => {
-        const expected = getArguments({
-            filePatterns: ["a.txt"],
-            indentTabs: true,
-            indentWidth: 2,
-            columnWidth: 24,
-        });
-        const actual = parseArgs(
-            createCLI(() => ""),
-            [
-                "--indent-tabs",
-                "--indent-width",
-                "2",
-                "--column-width",
-                "24",
-                "a.txt",
-            ],
-        );
+        const actual = parseArgs(["--check", "--", "--check"]);
 
         assert.deepEqual(actual, expected);
     });
@@ -317,8 +334,7 @@ suite("CLI", () => {
         const cli: CLI = {
             binName: "tree-sitter-fmt",
             fileEndings: ["scm"],
-            supportedFlagArgs: ["--indent-tabs"],
-            supportedValueArgs: ["--indent-width"],
+            getStdinFileEnding: () => "scm",
             format: (text) => Promise.resolve(text),
         };
 
@@ -332,14 +348,10 @@ suite("CLI", () => {
             [
                 "Usage: tree-sitter-fmt [options] [file/dir/glob ...]",
                 "",
-                "Flags:",
+                "Options:",
                 "  --help",
                 "  --version",
                 "  --check",
-                "  --indent-tabs",
-                "",
-                "Options:",
-                "  --indent-width <n>",
                 "",
             ].join("\n"),
         );
@@ -347,34 +359,8 @@ suite("CLI", () => {
 
     test("Rejects unknown arguments", () => {
         assert.throws(
-            () =>
-                parseArgs(
-                    createCLI(() => ""),
-                    ["--check", "--write"],
-                ),
+            () => parseArgs(["--check", "--write"]),
             /Unknown argument: --write/,
-        );
-    });
-
-    test("Rejects missing width values", () => {
-        assert.throws(
-            () =>
-                parseArgs(
-                    createCLI(() => ""),
-                    ["--indent-width"],
-                ),
-            /Missing value for argument: --indent-width/,
-        );
-    });
-
-    test("Rejects invalid width values", () => {
-        assert.throws(
-            () =>
-                parseArgs(
-                    createCLI(() => ""),
-                    ["--indent-width", "0"],
-                ),
-            /Invalid value for --indent-width: 0/,
         );
     });
 });
@@ -394,17 +380,29 @@ async function cleanupTempFile(fileName: string): Promise<void> {
     await fs.rm(path.dirname(fileName), { recursive: true, force: true });
 }
 
-function createCLI(format: (text: string) => string | Promise<string>): CLI {
+async function writeEditorConfig(
+    fileName: string,
+    config: EditorConfigOptions,
+): Promise<void> {
+    const extension = path.extname(fileName).slice(1);
+    const editorConfigPath = path.join(path.dirname(fileName), ".editorconfig");
+    const lines = [
+        `[*.${extension}]`,
+        ...Object.entries(config).map(([key, value]) => `${key} = ${value}`),
+        "",
+    ];
+    await fs.writeFile(editorConfigPath, lines.join("\n"), "utf8");
+}
+
+function createCLI(
+    format: (text: string, options: Options) => string | Promise<string>,
+): CLI {
     return {
         binName: "talon-fmt" as const,
         fileEndings: ["txt"],
-        supportedFlagArgs: ["--indent-tabs"],
-        supportedValueArgs: [
-            "--indent-width",
-            "--line-width",
-            "--column-width",
-        ],
-        format: (text: string) => Promise.resolve(format(text)),
+        getStdinFileEnding: () => "txt",
+        format: (text: string, options: Options) =>
+            Promise.resolve(format(text, options)),
     };
 }
 
@@ -412,11 +410,10 @@ async function readAndFormatStdin(
     cli: CLI,
     input: string,
     check: boolean = false,
-    options: Options = {},
 ): Promise<number> {
     const stdin = new PassThrough();
     Object.defineProperty(stdin, "isTTY", { value: false });
-    const result = mainFormatStdin(cli, stdin, check, options);
+    const result = mainFormatStdin(cli, stdin, check);
     stdin.end(input);
     return result;
 }

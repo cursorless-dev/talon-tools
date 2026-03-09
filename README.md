@@ -12,7 +12,7 @@ tree-sitter-fmt [options] [file/dir/glob ...]
 
 ### Options
 
-All binaries support these global options:
+All binaries support these options:
 
 | Option      | Meaning                          |
 | ----------- | -------------------------------- |
@@ -20,23 +20,19 @@ All binaries support these global options:
 | `--version` | Show version                     |
 | `--check`   | Check formatting without writing |
 
-`talon-fmt` also supports:
+Formatting options are read from [.editorconfig](https://editorconfig.org) based on the file path being
+formatted. For stdin, the formatter resolves a synthetic file such as
+`stdin.talon`, `stdin.talon-list`, `stdin.scm`, or `stdin.snippet` from the
+current working directory and loads `.editorconfig` relative to that path.
 
-| Option               | Meaning                          | Default |
-| -------------------- | -------------------------------- | ------- |
-| `--indent-tabs`      | Use tabs for indentation         |         |
-| `--indent-width <n>` | Set indentation width            | `4`     |
-| `--line-width <n>`   | Set preferred maximum line width | `80`    |
-| `--column-width <n>` | Set aligned left-column width    |         |
+Supported `.editorconfig` properties:
 
-`tree-sitter-fmt` also supports:
-
-| Option               | Meaning                  | Default |
-| -------------------- | ------------------------ | ------- |
-| `--indent-tabs`      | Use tabs for indentation |         |
-| `--indent-width <n>` | Set indentation width    | `4`     |
-
-`snippet-fmt` does not support any additional formatter-specific options.
+| Property          | Meaning                            |
+| ----------------- | ---------------------------------- |
+| `indent_style`    | Use tabs or spaces for indentation |
+| `indent_size`     | Set indentation width              |
+| `max_line_length` | Set preferred maximum line width   |
+| `column_width`    | Set aligned left-column width      |
 
 Use `--` to mark the end of options. Any following arguments are treated as
 file, directory, or glob patterns even if they start with `--`.

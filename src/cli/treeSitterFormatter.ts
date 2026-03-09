@@ -4,11 +4,15 @@ import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
 import { main } from "./cli.js";
 
+const fileEnding = "scm";
+
 void main({
     binName: "tree-sitter-fmt",
-    fileEndings: ["scm"],
-    supportedFlagArgs: ["--indent-tabs"],
-    supportedValueArgs: ["--indent-width"],
+    fileEndings: [fileEnding],
+
+    getStdinFileEnding() {
+        return fileEnding;
+    },
 
     format: async (text, options) => {
         const node = await parseText(text, "tree-sitter-query");

@@ -3,11 +3,15 @@
 import { snippetFormatter } from "../lib/snippetFormatter.js";
 import { main } from "./cli.js";
 
+const fileEnding = "snippet";
+
 void main({
     binName: "snippet-fmt",
-    fileEndings: ["snippet"],
-    supportedFlagArgs: [],
-    supportedValueArgs: [],
+    fileEndings: [fileEnding],
+
+    getStdinFileEnding() {
+        return fileEnding;
+    },
 
     format: async (text) => {
         const updated = snippetFormatter(text);

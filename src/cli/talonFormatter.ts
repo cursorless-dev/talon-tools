@@ -5,14 +5,19 @@ import { talonFormatter } from "../lib/talonFormatter.js";
 import { parseText } from "../util/parseText.js";
 import { main } from "./cli.js";
 
+const fileEndingTalon = "talon";
+const fileEndingTalonList = "talon-list";
+
 void main({
     binName: "talon-fmt",
-    fileEndings: ["talon", "talon-list"],
-    supportedFlagArgs: ["--indent-tabs"],
-    supportedValueArgs: ["--indent-width", "--line-width", "--column-width"],
+    fileEndings: [fileEndingTalon, fileEndingTalonList],
 
-    format: async (text, options, fileName) => {
-        if (isListFile(text, fileName)) {
+    getStdinFileEnding(text) {
+        return textIsList(text) ? fileEndingTalonList : fileEndingTalon;
+    },
+
+    format: async (text, options, filePath) => {
+        if (isListFile(text, filePath)) {
             const updated = talonListFormatter(text, options);
             return Promise.resolve(updated);
         }
@@ -22,12 +27,16 @@ void main({
     },
 });
 
-function isListFile(text: string, fileName: string): boolean {
-    if (fileName.endsWith(".talon-list")) {
-        return true;
-    }
-    if (fileName.endsWith(".talon")) {
+function isListFile(text: string, filePath: string): boolean {
+    if (filePath.endsWith(".talon")) {
         return false;
     }
+    if (filePath.endsWith(".talon-list")) {
+        return true;
+    }
+    return textIsList(text);
+}
+
+function textIsList(text: string): boolean {
     return text.startsWith("list:");
 }

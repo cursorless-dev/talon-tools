@@ -1,10 +1,12 @@
 import getStdin from "get-stdin";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import * as process from "node:process";
 import type { Readable } from "node:stream";
-import type { CLI, Options } from "../types.js";
+import type { CLI } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
+import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
 import { isMissingFileError } from "../util/isMissingFileError.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { parseFilePatterns } from "../util/parseFilePatterns.js";
@@ -22,7 +24,7 @@ export async function main(cli: CLI): Promise<void> {
 }
 
 async function mainUnsafe(cli: CLI): Promise<number> {
-    const args = parseArgs(cli, process.argv.slice(2));
+    const args = parseArgs(process.argv.slice(2));
 
     if (args.help) {
         printHelp(cli);
@@ -37,13 +39,13 @@ async function mainUnsafe(cli: CLI): Promise<number> {
     const hasFilePatterns = args.filePatterns.length > 0;
 
     if (hasFilePatterns) {
-        return mainFormatFiles(cli, args.check, args, args.filePatterns);
+        return mainFormatFiles(cli, args.check, args.filePatterns);
     }
 
     // If no file patterns are provided, check if there's input from stdin.
     // If stdin TTY it's an interactive terminal, so we shouldn't read from it.
     if (!process.stdin.isTTY) {
-        return mainFormatStdin(cli, process.stdin, args.check, args);
+        return mainFormatStdin(cli, process.stdin, args.check);
     }
 
     throw new Error(
@@ -54,7 +56,6 @@ async function mainUnsafe(cli: CLI): Promise<number> {
 async function mainFormatFiles(
     cli: CLI,
     check: boolean,
-    options: Options,
     filePatterns: string[],
 ): Promise<number> {
     if (check) {
@@ -62,7 +63,7 @@ async function mainFormatFiles(
     }
 
     const filePaths = await parseFilePatterns(cli, filePatterns);
-    const changedFileCount = await formatFiles(cli, check, options, filePaths);
+    const changedFileCount = await formatFiles(cli, check, filePaths);
 
     if (check) {
         if (changedFileCount > 0) {
@@ -88,13 +89,12 @@ async function mainFormatFiles(
 export async function formatFiles(
     cli: CLI,
     check: boolean,
-    options: Options,
     filePaths: string[],
 ): Promise<number> {
     let changedFileCount = 0;
 
     for (const fileName of filePaths) {
-        if (await formatFile(cli, check, options, fileName)) {
+        if (await formatFile(cli, check, fileName)) {
             changedFileCount++;
         }
     }
@@ -105,10 +105,10 @@ export async function formatFiles(
 export async function formatFile(
     cli: CLI,
     check: boolean,
-    options: Options,
     filePath: string,
 ): Promise<boolean> {
     try {
+        const options = await getOptionsFromConfig(filePath);
         const content = await fs.readFile(filePath, "utf8");
         const formatted = await cli.format(content, options, filePath);
 
@@ -142,10 +142,13 @@ export async function mainFormatStdin(
     cli: CLI,
     stdin: Readable,
     check: boolean,
-    options: Options,
 ): Promise<number> {
     const input = await getStdin({ stdin });
-    const formatted = await cli.format(input, options, "stdin");
+    const fileEnding = cli.getStdinFileEnding(input);
+    const fileName = `stdin.${fileEnding}`;
+    const filePath = path.resolve(fileName);
+    const options = await getOptionsFromConfig(filePath);
+    const formatted = await cli.format(input, options, filePath);
 
     if (check) {
         if (input !== formatted) {
