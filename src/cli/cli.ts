@@ -1,6 +1,7 @@
 import getStdin from "get-stdin";
 import * as fs from "node:fs/promises";
 import * as process from "node:process";
+import type { Readable } from "node:stream";
 import type { CLI } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
@@ -132,16 +133,12 @@ export async function formatFile(
     }
 }
 
-async function mainFormatStdin(cli: CLI, check: boolean): Promise<number> {
-    const input = await getStdin();
-    return formatStdin(cli, input, check);
-}
-
-export async function formatStdin(
+export async function mainFormatStdin(
     cli: CLI,
-    input: string,
-    check: boolean = false,
+    check: boolean,
+    stdin: Readable = process.stdin,
 ): Promise<number> {
+    const input = await getStdin({ stdin });
     const formatted = await cli.format(input, "stdin");
 
     if (check) {

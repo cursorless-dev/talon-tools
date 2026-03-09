@@ -2,7 +2,8 @@ import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { formatFile, formatFiles, formatStdin } from "../cli/cli.js";
+import { PassThrough } from "node:stream";
+import { formatFile, formatFiles, mainFormatStdin } from "../cli/cli.js";
 import type { CLI, ParsedArgs } from "../types.js";
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { parseArgs } from "../util/parseArgs.js";
@@ -108,7 +109,7 @@ suite("CLI", () => {
     test("writes formatted stdin to stdout", async () => {
         const cli = createCLI((text) => `${text} updated`);
         const output = await captureStreamWrite(process.stdout, async () =>
-            formatStdin(cli, "content"),
+            readAndFormatStdin(cli, "content"),
         );
 
         assert.equal(output.result, EXIT_OK);
@@ -118,7 +119,7 @@ suite("CLI", () => {
     test("reports stdin formatting issues to stderr in check mode", async () => {
         const cli = createCLI((text) => `${text} updated`);
         const output = await captureStreamWrite(process.stderr, async () =>
-            formatStdin(cli, "content", true),
+            readAndFormatStdin(cli, "content", true),
         );
 
         assert.equal(output.result, EXIT_FAIL);
@@ -128,10 +129,10 @@ suite("CLI", () => {
     test("returns success for unchanged stdin in check mode", async () => {
         const cli = createCLI((text) => text);
         const stderr = await captureStreamWrite(process.stderr, async () =>
-            formatStdin(cli, "content", true),
+            readAndFormatStdin(cli, "content", true),
         );
         const stdout = await captureStreamWrite(process.stdout, async () =>
-            formatStdin(cli, "content", true),
+            readAndFormatStdin(cli, "content", true),
         );
 
         assert.equal(stderr.result, EXIT_OK);
@@ -193,6 +194,18 @@ function createCLI(format: (text: string) => string | Promise<string>): CLI {
         fileEndings: ["txt"],
         format: (text: string) => Promise.resolve(format(text)),
     };
+}
+
+async function readAndFormatStdin(
+    cli: CLI,
+    input: string,
+    check: boolean = false,
+): Promise<number> {
+    const stdin = new PassThrough();
+    Object.defineProperty(stdin, "isTTY", { value: false });
+    const result = mainFormatStdin(cli, check, stdin);
+    stdin.end(input);
+    return result;
 }
 
 async function captureStreamWrite<T>(
