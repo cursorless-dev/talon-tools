@@ -12,15 +12,31 @@ tree-sitter-fmt [options] [file/dir/glob ...]
 
 ### Options
 
+All binaries support these global options:
+
+| Option      | Meaning                          |
+| ----------- | -------------------------------- |
+| `--help`    | Show help                        |
+| `--version` | Show version                     |
+| `--check`   | Check formatting without writing |
+
+`talon-fmt` also supports:
+
 | Option               | Meaning                          | Default |
 | -------------------- | -------------------------------- | ------- |
-| `--help`             | Show help                        |         |
-| `--version`          | Show version                     |         |
-| `--check`            | Check formatting without writing |         |
 | `--indent-tabs`      | Use tabs for indentation         |         |
 | `--indent-width <n>` | Set indentation width            | `4`     |
 | `--line-width <n>`   | Set preferred maximum line width | `80`    |
 | `--column-width <n>` | Set aligned left-column width    |         |
+
+`tree-sitter-fmt` also supports:
+
+| Option               | Meaning                  | Default |
+| -------------------- | ------------------------ | ------- |
+| `--indent-tabs`      | Use tabs for indentation |         |
+| `--indent-width <n>` | Set indentation width    | `4`     |
+
+`snippet-fmt` does not support any additional formatter-specific options.
 
 Use `--` to mark the end of options. Any following arguments are treated as
 file, directory, or glob patterns even if they start with `--`.
