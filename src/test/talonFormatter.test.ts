@@ -1,6 +1,7 @@
 import * as assert from "node:assert";
 import { talonFormatter } from "../lib/talonFormatter.js";
 import { parseText } from "../util/parseText.js";
+import { getDefaultOptions } from "../util/getDefaultArguments.js";
 
 type Content = string | string[];
 
@@ -179,13 +180,27 @@ suite("Talon formatter", () => {
             const content = getContentString(fixture.pre);
             const rootNode = await parseText(content, "tree-sitter-talon");
             const actual = talonFormatter(rootNode, {
-                indentation: "    ",
+                ...getDefaultOptions(),
                 columnWidth: 28,
             });
             const expected = getContentString(fixture.post);
             assert.equal(actual, expected);
         });
     }
+
+    test("uses tabs for indented command blocks", async () => {
+        const rootNode = await parseText(
+            "foo:\n  edit.left()",
+            "tree-sitter-talon",
+        );
+
+        const actual = talonFormatter(rootNode, {
+            ...getDefaultOptions(),
+            indentTabs: true,
+        });
+
+        assert.equal(actual, "foo:\n\tedit.left()\n");
+    });
 });
 
 function getContentString(content: Content): string {

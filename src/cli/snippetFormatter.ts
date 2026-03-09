@@ -7,7 +7,7 @@ void main({
     binName: "snippet-fmt",
     fileEndings: ["snippet"],
 
-    format: async (text: string) => {
+    format: async (text) => {
         const updated = snippetFormatter(text);
         return Promise.resolve(updated);
     },

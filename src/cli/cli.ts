@@ -2,7 +2,7 @@ import getStdin from "get-stdin";
 import * as fs from "node:fs/promises";
 import * as process from "node:process";
 import type { Readable } from "node:stream";
-import type { CLI } from "../types.js";
+import type { CLI, Options } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
 import { isMissingFileError } from "../util/isMissingFileError.js";
@@ -36,13 +36,13 @@ async function mainUnsafe(cli: CLI): Promise<number> {
     const hasFilePatterns = args.filePatterns.length > 0;
 
     if (hasFilePatterns) {
-        return mainFormatFiles(cli, args.filePatterns, args.check);
+        return mainFormatFiles(cli, args.check, args, args.filePatterns);
     }
 
     // If no file patterns are provided, check if there's input from stdin.
     // If stdin TTY it's an interactive terminal, so we shouldn't read from it.
     if (!process.stdin.isTTY) {
-        return mainFormatStdin(cli, process.stdin, args.check);
+        return mainFormatStdin(cli, process.stdin, args.check, args);
     }
 
     throw new Error(
@@ -52,14 +52,20 @@ async function mainUnsafe(cli: CLI): Promise<number> {
 
 async function mainFormatFiles(
     cli: CLI,
-    filePatterns: string[],
     check: boolean,
+    options: Options,
+    filePatterns: string[],
 ): Promise<number> {
     if (check) {
         console.log("Checking formatting...");
     }
 
-    const changedFileCount = await formatFiles(cli, filePatterns, check);
+    const changedFileCount = await formatFiles(
+        cli,
+        filePatterns,
+        check,
+        options,
+    );
 
     if (check) {
         if (changedFileCount > 0) {
@@ -86,11 +92,12 @@ export async function formatFiles(
     cli: CLI,
     filePatterns: string[],
     check: boolean,
+    options: Options,
 ): Promise<number> {
     let changedFileCount = 0;
 
     for (const fileName of filePatterns) {
-        if (await formatFile(cli, fileName, check)) {
+        if (await formatFile(cli, check, options, fileName)) {
             changedFileCount++;
         }
     }
@@ -100,12 +107,13 @@ export async function formatFiles(
 
 export async function formatFile(
     cli: CLI,
-    fileName: string,
     check: boolean,
+    options: Options,
+    fileName: string,
 ): Promise<boolean> {
     try {
         const content = await fs.readFile(fileName, "utf8");
-        const formatted = await cli.format(content, fileName);
+        const formatted = await cli.format(content, options, fileName);
 
         if (formatted === content) {
             return false;
@@ -137,9 +145,10 @@ export async function mainFormatStdin(
     cli: CLI,
     stdin: Readable,
     check: boolean,
+    options: Options,
 ): Promise<number> {
     const input = await getStdin({ stdin });
-    const formatted = await cli.format(input, "stdin");
+    const formatted = await cli.format(input, options, "stdin");
 
     if (check) {
         if (input !== formatted) {

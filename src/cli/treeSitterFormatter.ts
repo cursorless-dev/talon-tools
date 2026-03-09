@@ -3,14 +3,13 @@
 import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
 import { main } from "./cli.js";
-import { indentation } from "../util/constants.js";
 
 void main({
     binName: "tree-sitter-fmt",
     fileEndings: ["scm"],
 
-    format: async (text: string) => {
+    format: async (text, options) => {
         const node = await parseText(text, "tree-sitter-query");
-        return treeSitterFormatter(node, { indentation });
+        return treeSitterFormatter(node, options);
     },
 });

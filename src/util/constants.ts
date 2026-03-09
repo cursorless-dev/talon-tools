@@ -4,5 +4,3 @@ export const EXIT_OK = 0;
 export const EXIT_FAIL = 1;
 // Exit code 2: Unexpected error
 export const EXIT_ERROR = 2;
-
-export const indentation = "    ";

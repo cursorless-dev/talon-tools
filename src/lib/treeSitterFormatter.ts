@@ -1,11 +1,10 @@
 import type { Node } from "web-tree-sitter";
+import type { Options } from "../types.js";
+import { getIndentation } from "../util/getIndentation.js";
 
-interface Properties {
-    indentation: string;
-}
-
-export function treeSitterFormatter(node: Node, props: Properties): string {
-    const formatter = new TreeSitterFormatter(props.indentation);
+export function treeSitterFormatter(node: Node, options: Options): string {
+    const indentation = getIndentation(options);
+    const formatter = new TreeSitterFormatter(indentation);
     return formatter.getText(node);
 }
 

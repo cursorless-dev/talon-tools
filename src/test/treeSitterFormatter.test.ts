@@ -1,6 +1,7 @@
 import * as assert from "node:assert";
 import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
+import { getDefaultOptions } from "../util/getDefaultArguments.js";
 
 type Content = string | string[];
 
@@ -102,13 +103,22 @@ suite("Tree-sitter formatter", () => {
         test(fixture.title, async () => {
             const content = getContentString(fixture.pre);
             const rootNode = await parseText(content, "tree-sitter-query");
-            const actual = treeSitterFormatter(rootNode, {
-                indentation: "    ",
-            });
+            const actual = treeSitterFormatter(rootNode, getDefaultOptions());
             const expected = getContentString(fixture.post);
             assert.equal(actual, expected);
         });
     }
+
+    test("uses tabs for indentation when requested", async () => {
+        const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
+
+        const actual = treeSitterFormatter(rootNode, {
+            ...getDefaultOptions(),
+            indentTabs: true,
+        });
+
+        assert.equal(actual, "(aaa\n\t(bbb)\n)\n");
+    });
 });
 
 function getContentString(content: Content): string {

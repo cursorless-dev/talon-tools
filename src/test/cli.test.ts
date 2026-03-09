@@ -4,10 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
 import { formatFile, formatFiles, mainFormatStdin } from "../cli/cli.js";
-import type { CLI, ParsedArgs } from "../types.js";
+import type { CLI, Options, ParsedArgs } from "../types.js";
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
+import {
+    getDefaultArguments,
+    getDefaultOptions,
+} from "../util/getDefaultArguments.js";
 import { parseArgs } from "../util/parseArgs.js";
-import { getDefaultArguments } from "../util/getDefaultArguments.js";
 
 suite("CLI", () => {
     test("formats a file in place", async () => {
@@ -19,7 +22,12 @@ suite("CLI", () => {
         const cli = createCLI((text) => `${text} updated`);
 
         try {
-            const didChange = await formatFile(cli, fileName, false);
+            const didChange = await formatFile(
+                cli,
+                false,
+                getDefaultOptions(),
+                fileName,
+            );
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -38,7 +46,12 @@ suite("CLI", () => {
         const cli = createCLI((text) => `${text} updated`);
 
         try {
-            const didChange = await formatFile(cli, fileName, true);
+            const didChange = await formatFile(
+                cli,
+                true,
+                getDefaultOptions(),
+                fileName,
+            );
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -64,6 +77,7 @@ suite("CLI", () => {
                 cli,
                 [unchangedFileName, changedFileName],
                 false,
+                getDefaultOptions(),
             );
             const unchangedContent = await fs.readFile(
                 unchangedFileName,
@@ -83,7 +97,12 @@ suite("CLI", () => {
         const fileName = path.join(os.tmpdir(), "talonfmt-missing.txt");
         const cli = createCLI((text) => `${text} updated`);
 
-        const didChange = await formatFile(cli, fileName, false);
+        const didChange = await formatFile(
+            cli,
+            false,
+            getDefaultOptions(),
+            fileName,
+        );
 
         assert.equal(didChange, false);
     });
@@ -100,7 +119,7 @@ suite("CLI", () => {
 
         try {
             await assert.rejects(
-                formatFile(cli, fileName, false),
+                formatFile(cli, false, getDefaultOptions(), fileName),
                 /Failed to format '.*example\.txt': boom/,
             );
         } finally {
@@ -141,6 +160,71 @@ suite("CLI", () => {
         assert.equal(stderr.text, "");
         assert.equal(stdout.result, EXIT_OK);
         assert.equal(stdout.text, "");
+    });
+
+    test("passes options and file name to file formatter", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.txt",
+            "content",
+        );
+        const options = {
+            ...getDefaultOptions(),
+            indentTabs: true,
+            indentWidth: 2,
+            columnWidth: 24,
+        };
+        let actualText: string | undefined;
+        let actualOptions: Options | undefined;
+        let actualFileName: string | undefined;
+        const cli: CLI = {
+            binName: "talon-fmt",
+            fileEndings: ["txt"],
+            format: (text, receivedOptions, receivedFileName) => {
+                actualText = text;
+                actualOptions = receivedOptions;
+                actualFileName = receivedFileName;
+                return Promise.resolve(text);
+            },
+        };
+
+        try {
+            await formatFile(cli, false, options, fileName);
+
+            assert.equal(actualText, "content");
+            assert.deepEqual(actualOptions, options);
+            assert.equal(actualFileName, fileName);
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("passes options and stdin file name to stdin formatter", async () => {
+        const options = {
+            ...getDefaultOptions(),
+            indentTabs: true,
+            indentWidth: 2,
+        };
+        let actualText: string | undefined;
+        let actualOptions: Options | undefined;
+        let actualFileName: string | undefined;
+        const cli: CLI = {
+            binName: "talon-fmt",
+            fileEndings: ["txt"],
+            format: (text, receivedOptions, receivedFileName) => {
+                actualText = text;
+                actualOptions = receivedOptions;
+                actualFileName = receivedFileName;
+                return Promise.resolve(text);
+            },
+        };
+
+        const result = await readAndFormatStdin(cli, "content", false, options);
+
+        assert.equal(result, EXIT_OK);
+        assert.equal(actualText, "content");
+        assert.deepEqual(actualOptions, options);
+        assert.equal(actualFileName, "stdin");
     });
 
     test("parses check mode", () => {
@@ -237,10 +321,11 @@ async function readAndFormatStdin(
     cli: CLI,
     input: string,
     check: boolean = false,
+    options: Options = getDefaultOptions(),
 ): Promise<number> {
     const stdin = new PassThrough();
     Object.defineProperty(stdin, "isTTY", { value: false });
-    const result = mainFormatStdin(cli, stdin, check);
+    const result = mainFormatStdin(cli, stdin, check, options);
     stdin.end(input);
     return result;
 }

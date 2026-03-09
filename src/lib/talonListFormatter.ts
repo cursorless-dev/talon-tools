@@ -1,12 +1,9 @@
+import type { Options } from "../types.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { parseTalonList } from "./parseTalonList.js";
 
-interface Properties {
-    columnWidth?: number;
-}
-
-export function talonListFormatter(text: string, props: Properties): string {
-    const columnWidth = getColumnWidth(text, props.columnWidth);
+export function talonListFormatter(text: string, options: Options): string {
+    const columnWidth = getColumnWidth(text) ?? options.columnWidth;
     const talonList = parseTalonList(text);
     talonList.headers.sort((a, _b) =>
         a.type === "header" && a.key === "list" ? -1 : 0,

@@ -1,5 +1,6 @@
 import * as assert from "node:assert";
 import { talonListFormatter } from "../lib/talonListFormatter.js";
+import { getDefaultOptions } from "../util/getDefaultArguments.js";
 
 const fixtures: {
     title: string;
@@ -58,7 +59,10 @@ bat:      b
 suite("Talon list formatter", () => {
     for (const fixture of fixtures) {
         test(fixture.title, () => {
-            const actual = talonListFormatter(fixture.pre, { columnWidth: 10 });
+            const actual = talonListFormatter(fixture.pre, {
+                ...getDefaultOptions(),
+                columnWidth: 10,
+            });
             assert.equal(actual, fixture.post);
         });
     }

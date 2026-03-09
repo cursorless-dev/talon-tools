@@ -1,14 +1,12 @@
 import type { Node } from "web-tree-sitter";
+import type { Options } from "../types.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
+import { getIndentation } from "../util/getIndentation.js";
 
-interface Properties {
-    indentation: string;
-    columnWidth?: number;
-}
-
-export function talonFormatter(node: Node, props: Properties): string {
-    const columnWidth = getColumnWidth(node.text, props.columnWidth);
-    const formatter = new TalonFormatter(props.indentation, columnWidth);
+export function talonFormatter(node: Node, options: Options): string {
+    const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
+    const indentation = getIndentation(options);
+    const formatter = new TalonFormatter(indentation, columnWidth);
     return formatter.getText(node);
 }
 

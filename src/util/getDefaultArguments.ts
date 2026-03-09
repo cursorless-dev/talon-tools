@@ -1,4 +1,4 @@
-import type { ParsedArgs } from "../types.js";
+import type { Options, ParsedArgs } from "../types.js";
 
 export function getDefaultArguments(): ParsedArgs {
     return {
@@ -6,6 +6,12 @@ export function getDefaultArguments(): ParsedArgs {
         help: false,
         version: false,
         check: false,
+        ...getDefaultOptions(),
+    };
+}
+
+export function getDefaultOptions(): Options {
+    return {
         indentTabs: false,
         indentWidth: 4,
         lineWidth: 80,
