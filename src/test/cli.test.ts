@@ -123,7 +123,7 @@ suite("CLI", () => {
         });
     });
 
-    test("rejects conflicting modes", () => {
+    test("rejects unknown arguments", () => {
         assert.throws(
             () => parseArgs(["--check", "--write"]),
             /Unknown argument: --write/,

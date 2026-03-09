@@ -2,13 +2,15 @@ import * as fs from "node:fs/promises";
 import * as process from "node:process";
 import type { CLI } from "../types.js";
 import { parseArgs } from "../util/parseArgs.js";
+import { printHelp } from "../util/printHelp.js";
 
 export async function main(cli: CLI) {
     try {
         return await mainUnsafe(cli);
     } catch (error) {
         console.error(getErrorMessage(error));
-        process.exit(1);
+        // Exit code 2: Unexpected error
+        process.exit(2);
     }
 }
 
@@ -31,6 +33,7 @@ async function mainUnsafe(cli: CLI) {
             console.warn(
                 `[warn] Code style issues found in ${changedFileCount} file(s).`,
             );
+            // Exit code 1: Check failed
             process.exit(1);
         }
 
@@ -98,10 +101,6 @@ export async function formatFile(
 
 function getErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
-}
-
-function printHelp(cli: CLI) {
-    console.log(`Usage: ${cli.binName} [--check] <file> [file ...]`);
 }
 
 function isMissingFileError(error: unknown) {

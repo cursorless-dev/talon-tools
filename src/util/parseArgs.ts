@@ -1,32 +1,49 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import type { ParsedArgs } from "../types.js";
 
-export function parseArgs(argv: string[]): ParsedArgs {
-    let help = false;
-    let check = false;
-    const fileNames: string[] = [];
+export const KNOWN_ARGUMENTS = ["--help", "--check"] as const;
 
-    for (const arg of argv) {
+type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
+type ArgHandler = (parsedArgs: ParsedArgs) => void;
+
+const ARG_HANDLERS: Record<KnownArgument, ArgHandler> = {
+    "--help": (parsedArgs) => {
+        parsedArgs.help = true;
+    },
+    "--check": (parsedArgs) => {
+        parsedArgs.check = true;
+    },
+};
+
+export function parseArgs(argv: string[]): ParsedArgs {
+    const result: ParsedArgs = {
+        fileNames: [],
+        help: false,
+        check: false,
+    };
+
+    for (let index = 0; index < argv.length; index++) {
+        const arg = argv[index];
+
         if (arg === "--") {
-            fileNames.push(...argv.slice(argv.indexOf(arg) + 1));
+            result.fileNames.push(...argv.slice(index + 1));
             break;
         }
 
-        if (arg === "--help" || arg === "-h") {
-            help = true;
+        const handler = ARG_HANDLERS[arg as KnownArgument];
+
+        if (handler != null) {
+            handler(result);
             continue;
         }
 
-        if (arg === "--check") {
-            check = true;
-            continue;
-        }
-
-        if (arg.startsWith("-")) {
+        if (arg.startsWith("--")) {
             throw new Error(`Unknown argument: ${arg}`);
         }
 
-        fileNames.push(arg);
+        result.fileNames.push(arg);
     }
 
-    return { fileNames, help, check };
+    return result;
 }
