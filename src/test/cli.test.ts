@@ -2,9 +2,10 @@ import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { formatFile, formatFiles } from "../cli/cli.js";
+import { formatFile, formatFiles, formatStdin } from "../cli/cli.js";
+import type { CLI, ParsedArgs } from "../types.js";
+import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { parseArgs } from "../util/parseArgs.js";
-import type { ParsedArgs } from "../types.js";
 
 suite("CLI", () => {
     test("formats a file in place", async () => {
@@ -104,6 +105,41 @@ suite("CLI", () => {
         }
     });
 
+    test("writes formatted stdin to stdout", async () => {
+        const cli = createCLI((text) => `${text} updated`);
+        const output = await captureStreamWrite(process.stdout, async () =>
+            formatStdin(cli, "content"),
+        );
+
+        assert.equal(output.result, EXIT_OK);
+        assert.equal(output.text, "content updated");
+    });
+
+    test("reports stdin formatting issues to stderr in check mode", async () => {
+        const cli = createCLI((text) => `${text} updated`);
+        const output = await captureStreamWrite(process.stderr, async () =>
+            formatStdin(cli, "content", true),
+        );
+
+        assert.equal(output.result, EXIT_FAIL);
+        assert.equal(output.text, "[warn] Code style issues found in stdin.");
+    });
+
+    test("returns success for unchanged stdin in check mode", async () => {
+        const cli = createCLI((text) => text);
+        const stderr = await captureStreamWrite(process.stderr, async () =>
+            formatStdin(cli, "content", true),
+        );
+        const stdout = await captureStreamWrite(process.stdout, async () =>
+            formatStdin(cli, "content", true),
+        );
+
+        assert.equal(stderr.result, EXIT_OK);
+        assert.equal(stderr.text, "");
+        assert.equal(stdout.result, EXIT_OK);
+        assert.equal(stdout.text, "");
+    });
+
     test("parses check mode", () => {
         const expected: ParsedArgs = {
             filePatterns: ["a.txt", "b.txt"],
@@ -151,9 +187,32 @@ async function cleanupTempFile(fileName: string): Promise<void> {
     await fs.rm(path.dirname(fileName), { recursive: true, force: true });
 }
 
-function createCLI(format: (text: string) => string | Promise<string>) {
+function createCLI(format: (text: string) => string | Promise<string>): CLI {
     return {
         binName: "talon-fmt" as const,
+        fileEndings: ["txt"],
         format: (text: string) => Promise.resolve(format(text)),
     };
+}
+
+async function captureStreamWrite<T>(
+    stream: NodeJS.WriteStream,
+    callback: () => Promise<T>,
+): Promise<{ result: T; text: string }> {
+    let text = "";
+    const originalWrite = stream.write.bind(stream);
+
+    (stream.write as unknown as (chunk: string) => boolean) = (
+        chunk: string | Uint8Array,
+    ) => {
+        text += chunk.toString();
+        return true;
+    };
+
+    try {
+        const result = await callback();
+        return { result, text };
+    } finally {
+        stream.write = originalWrite;
+    }
 }

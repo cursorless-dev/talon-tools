@@ -3,6 +3,8 @@ import * as fs from "node:fs/promises";
 import * as process from "node:process";
 import type { CLI } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
+import { getErrorMessage } from "../util/getErrorMessage.js";
+import { isMissingFileError } from "../util/isMissingFileError.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
 import { printVersion } from "../util/printVersion.js";
@@ -45,27 +47,6 @@ async function mainUnsafe(cli: CLI): Promise<number> {
     throw new Error(
         "No input files specified. Use --help for usage information.",
     );
-}
-
-async function mainFormatStdin(
-    cli: CLI,
-    check: boolean = false,
-): Promise<number> {
-    const input = await getStdin();
-    const formatted = await cli.format(input, "stdin");
-
-    if (check) {
-        if (input !== formatted) {
-            process.stderr.write("[warn] Code style issues found in stdin.");
-            return EXIT_FAIL;
-        }
-
-        return EXIT_OK;
-    }
-
-    process.stdout.write(formatted);
-
-    return EXIT_OK;
 }
 
 async function mainFormatFiles(
@@ -151,15 +132,28 @@ export async function formatFile(
     }
 }
 
-function getErrorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
+async function mainFormatStdin(cli: CLI, check: boolean): Promise<number> {
+    const input = await getStdin();
+    return formatStdin(cli, input, check);
 }
 
-function isMissingFileError(error: unknown) {
-    return (
-        typeof error === "object" &&
-        error != null &&
-        "code" in error &&
-        error.code === "ENOENT"
-    );
+export async function formatStdin(
+    cli: CLI,
+    input: string,
+    check: boolean = false,
+): Promise<number> {
+    const formatted = await cli.format(input, "stdin");
+
+    if (check) {
+        if (input !== formatted) {
+            process.stderr.write("[warn] Code style issues found in stdin.");
+            return EXIT_FAIL;
+        }
+
+        return EXIT_OK;
+    }
+
+    process.stdout.write(formatted);
+
+    return EXIT_OK;
 }

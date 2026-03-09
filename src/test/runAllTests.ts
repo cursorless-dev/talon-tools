@@ -1,4 +1,4 @@
-import { globSync } from "glob";
+import fastGlob from "fast-glob";
 import Mocha from "mocha";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,7 +10,7 @@ const mocha = new Mocha({
 
 const cwd = path.dirname(fileURLToPath(import.meta.url));
 
-const files = globSync("**/**.test.ts", { cwd }).sort();
+const files = fastGlob.sync("**/**.test.ts", { cwd }).sort();
 
 files.forEach((f) => mocha.addFile(path.resolve(cwd, f)));
 

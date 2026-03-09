@@ -1,5 +1,6 @@
 export interface CLI {
     binName: "snippet-fmt" | "talon-fmt" | "tree-sitter-fmt";
+    fileEndings: string[];
 
     format(text: string, fileName: string): Promise<string>;
 }

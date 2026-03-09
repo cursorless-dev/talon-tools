@@ -7,6 +7,7 @@ import { indentation } from "../util/constants.js";
 
 void main({
     binName: "tree-sitter-fmt",
+    fileEndings: ["scm"],
 
     format: async (text: string) => {
         const node = await parseText(text, "tree-sitter-query");

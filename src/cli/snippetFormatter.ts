@@ -5,6 +5,7 @@ import { main } from "./cli.js";
 
 void main({
     binName: "snippet-fmt",
+    fileEndings: ["snippet"],
 
     format: async (text: string) => {
         const updated = snippetFormatter(text);

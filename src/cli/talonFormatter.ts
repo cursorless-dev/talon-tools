@@ -8,6 +8,7 @@ import { indentation } from "../util/constants.js";
 
 void main({
     binName: "talon-fmt",
+    fileEndings: ["talon", "talon-list"],
 
     format: async (text: string, fileName: string) => {
         if (fileName.endsWith(".talon-list")) {
