@@ -2,7 +2,7 @@
     "tabWidth": 4,
     "overrides": [
         {
-            "files": "*.yaml",
+            "files": "*.{yaml,md}",
             "options": {
                 "tabWidth": 2
             }

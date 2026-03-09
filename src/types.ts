@@ -10,4 +10,8 @@ export interface ParsedArgs {
     help: boolean;
     version: boolean;
     check: boolean;
+    indentTabs: boolean;
+    indentWidth: number;
+    lineWidth: number;
+    columnWidth: number | undefined;
 }

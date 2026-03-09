@@ -7,6 +7,7 @@ import { formatFile, formatFiles, mainFormatStdin } from "../cli/cli.js";
 import type { CLI, ParsedArgs } from "../types.js";
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { parseArgs } from "../util/parseArgs.js";
+import { getDefaultArguments } from "../util/getDefaultArguments.js";
 
 suite("CLI", () => {
     test("formats a file in place", async () => {
@@ -143,25 +144,46 @@ suite("CLI", () => {
     });
 
     test("parses check mode", () => {
-        const expected: ParsedArgs = {
+        const expected = getArguments({
             filePatterns: ["a.txt", "b.txt"],
-            help: false,
-            version: false,
             check: true,
-        };
+        });
         const actual = parseArgs(["--check", "a.txt", "b.txt"]);
 
         assert.deepEqual(actual, expected);
     });
 
     test("parses check mode and end-of-options marker", () => {
-        const expected: ParsedArgs = {
+        const expected = getArguments({
             filePatterns: ["--check"],
+            check: true,
+        });
+        const actual = parseArgs(["--check", "--", "--check"]);
+
+        assert.deepEqual(actual, expected);
+    });
+
+    test("parses tabs and width arguments", () => {
+        const expected = getArguments({
+            filePatterns: ["a.txt"],
             help: false,
             version: false,
-            check: true,
-        };
-        const actual = parseArgs(["--check", "--", "--check"]);
+            check: false,
+            indentTabs: true,
+            indentWidth: 2,
+            lineWidth: 80,
+            columnWidth: 24,
+        });
+        const actual = parseArgs([
+            "--indent-tabs",
+            "--indent-width",
+            "2",
+            "--line-width",
+            "80",
+            "--column-width",
+            "24",
+            "a.txt",
+        ]);
 
         assert.deepEqual(actual, expected);
     });
@@ -170,6 +192,20 @@ suite("CLI", () => {
         assert.throws(
             () => parseArgs(["--check", "--write"]),
             /Unknown argument: --write/,
+        );
+    });
+
+    test("rejects missing width values", () => {
+        assert.throws(
+            () => parseArgs(["--indent-width"]),
+            /Missing value for argument: --indent-width/,
+        );
+    });
+
+    test("rejects invalid width values", () => {
+        assert.throws(
+            () => parseArgs(["--line-width", "0"]),
+            /Invalid value for --line-width: 0/,
         );
     });
 });
@@ -229,4 +265,11 @@ async function captureStreamWrite<T>(
     } finally {
         stream.write = originalWrite;
     }
+}
+
+function getArguments(args: Partial<ParsedArgs>) {
+    return {
+        ...getDefaultArguments(),
+        ...args,
+    };
 }

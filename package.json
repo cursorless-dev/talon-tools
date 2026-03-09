@@ -28,12 +28,12 @@
         "prepack": "npm run build",
         "build": "tsx ./src/build.ts",
         "clean": "rm -rf out",
-        "lint": "npm run lint:fmt && npm run lint:ts",
-        "lint:fmt": "prettier --check .",
+        "lint": "npm run lint:ts &&npm run lint:fmt",
         "lint:ts": "tsc -p . && eslint src",
-        "fix": "npm run fix:fmt && npm run fix:ts",
-        "fix:fmt": "prettier --write --list-different .",
+        "lint:fmt": "prettier --check .",
+        "fix": "npm run fix:ts && npm run fix:fmt",
         "fix:ts": "eslint src --fix",
+        "fix:fmt": "prettier --write --list-different .",
         "test": "tsx src/test/runAllTests.ts"
     },
     "dependencies": {

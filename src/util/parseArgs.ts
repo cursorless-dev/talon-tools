@@ -1,13 +1,34 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import type { ParsedArgs } from "../types.js";
+import { getDefaultArguments } from "./getDefaultArguments.js";
 
-export const KNOWN_ARGUMENTS = ["--help", "--version", "--check"] as const;
+export const KNOWN_FLAG_ARGUMENTS = [
+    "--help",
+    "--version",
+    "--check",
+    "--indent-tabs",
+] as const;
 
-type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
-type ArgHandler = (parsedArgs: ParsedArgs) => void;
+export const KNOWN_VALUE_ARGUMENTS = [
+    "--indent-width",
+    "--line-width",
+    "--column-width",
+] as const;
 
-const ARG_HANDLERS: Record<KnownArgument, ArgHandler> = {
+type FlagArg = (typeof KNOWN_FLAG_ARGUMENTS)[number];
+type ValueArg = (typeof KNOWN_VALUE_ARGUMENTS)[number];
+type KnownArg = FlagArg | ValueArg;
+
+type FlagHandler = (parsedArgs: ParsedArgs) => void;
+
+type ValueHandler = (
+    parsedArgs: ParsedArgs,
+    argName: KnownArg,
+    value: string,
+) => void;
+
+const FLAG_ARG_HANDLERS: Record<FlagArg, FlagHandler> = {
     "--help": (parsedArgs) => {
         parsedArgs.help = true;
     },
@@ -17,15 +38,25 @@ const ARG_HANDLERS: Record<KnownArgument, ArgHandler> = {
     "--check": (parsedArgs) => {
         parsedArgs.check = true;
     },
+    "--indent-tabs": (parsedArgs) => {
+        parsedArgs.indentTabs = true;
+    },
+};
+
+const VALUE_ARG_HANDLERS: Record<ValueArg, ValueHandler> = {
+    "--indent-width": (parsedArgs, argName, value) => {
+        parsedArgs.indentWidth = parsePositiveInteger(argName, value);
+    },
+    "--line-width": (parsedArgs, argName, value) => {
+        parsedArgs.lineWidth = parsePositiveInteger(argName, value);
+    },
+    "--column-width": (parsedArgs, argName, value) => {
+        parsedArgs.columnWidth = parsePositiveInteger(argName, value);
+    },
 };
 
 export function parseArgs(argv: string[]): ParsedArgs {
-    const result: ParsedArgs = {
-        filePatterns: [],
-        help: false,
-        version: false,
-        check: false,
-    };
+    const result = getDefaultArguments();
 
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i];
@@ -36,10 +67,22 @@ export function parseArgs(argv: string[]): ParsedArgs {
             break;
         }
 
-        const handler = ARG_HANDLERS[arg as KnownArgument];
+        const flagHandler = FLAG_ARG_HANDLERS[arg as FlagArg];
 
-        if (handler != null) {
-            handler(result);
+        if (flagHandler != null) {
+            flagHandler(result);
+            continue;
+        }
+
+        const valueHandler = VALUE_ARG_HANDLERS[arg as ValueArg];
+
+        if (valueHandler != null) {
+            const value = argv[i + 1];
+            if (value == null) {
+                throw new Error(`Missing value for argument: ${arg}`);
+            }
+            valueHandler(result, arg as ValueArg, value);
+            i++;
             continue;
         }
 
@@ -51,4 +94,14 @@ export function parseArgs(argv: string[]): ParsedArgs {
     }
 
     return result;
+}
+
+function parsePositiveInteger(argName: KnownArg, value: string): number {
+    const parsed = Number.parseInt(value, 10);
+
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+        throw new Error(`Invalid value for ${argName}: ${value}`);
+    }
+
+    return parsed;
 }
