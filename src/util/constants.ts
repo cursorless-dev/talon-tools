@@ -9,9 +9,13 @@ export const DEFAULT_INDENT_WIDTH = 4;
 export const DEFAULT_MAX_LINE_LENGTH = 80;
 export const DEFAULT_INSERT_FINAL_NEWLINE = true;
 
-const IGNORE_FOLDERS = [".git", ".svn", ".hg", "node_modules", "__pycache__"];
-
-export const GIT_IGNORE_PATTERNS = IGNORE_FOLDERS.map((folder) => `${folder}/`);
+export const IGNORE_FOLDERS = [
+    ".git",
+    ".svn",
+    ".hg",
+    "node_modules",
+    "__pycache__",
+];
 
 export const GLOB_IGNORE_PATTERNS = IGNORE_FOLDERS.map(
     (pattern) => `**/${pattern}/**`,
