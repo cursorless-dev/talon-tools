@@ -2,7 +2,7 @@
 
 Linting and formatting tools for Talon and Cursorless.
 
-## CLI
+## Command line
 
 ```sh
 talon-fmt [options] [file/dir/glob ...]
@@ -10,7 +10,7 @@ snippet-fmt [options] [file/dir/glob ...]
 tree-sitter-fmt [options] [file/dir/glob ...]
 ```
 
-### Options
+### CLI options
 
 All binaries support these options:
 
@@ -19,6 +19,8 @@ All binaries support these options:
 | `--help`    | Show help                        |
 | `--version` | Show version                     |
 | `--check`   | Check formatting without writing |
+
+## Formatting options
 
 Formatting options are read from [.editorconfig](https://editorconfig.org) based on the file path being
 formatted. For stdin, the formatter resolves a synthetic file such as
