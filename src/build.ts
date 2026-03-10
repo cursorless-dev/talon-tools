@@ -10,6 +10,7 @@ export async function build() {
         outdir: "out",
         minify: true,
         sourcemap: true,
+        packages: "external",
 
         entryPoints: {
             lib: "src/lib.ts",

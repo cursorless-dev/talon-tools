@@ -82,3 +82,13 @@ repos:
 - Each pre-commit hook should have a matching npm binary with the same name.
 - Binaries ending with `-fmt` are formatters by default and turn into linters/checkers with the `--check` argument.
 - (Future) binaries ending with `-check` are linters by default and turn into fixers with the `--fix` argument.
+
+## Developer
+
+```sh
+# Try formatter without pre-commit
+node out/treeSitterFormatter.js test.scm
+
+# Try formatter with pre-commit
+pre-commit try-repo . tree-sitter-fmt --files test.scm -v
+```
