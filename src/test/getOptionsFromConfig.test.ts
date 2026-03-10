@@ -46,6 +46,76 @@ suite("getOptionsFromConfig", () => {
             await cleanupTempFile(fileName);
         }
     });
+
+    test("insert_final_newline: false sets insertFinalNewline: false", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                insert_final_newline: false,
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                insertFinalNewline: false,
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("preserve_multiline: true sets preserveMultiline: true", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                preserve_multiline: true,
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                preserveMultiline: true,
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("end_of_line: crlf sets endOfLine: crlf", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                end_of_line: "crlf",
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                endOfLine: "crlf",
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("end_of_line: unset is ignored", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                end_of_line: "unset",
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {});
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
 });
 
 async function createTempFile(
