@@ -1,5 +1,4 @@
-import type { Node } from "web-tree-sitter";
-import type { FormatterOptions } from "../types.js";
+import type { FormatterOptions, SyntaxNode } from "../types.js";
 import {
     DEFAULT_INSERT_FINAL_NEWLINE,
     DEFAULT_MAX_LINE_LENGTH,
@@ -18,7 +17,10 @@ type Options = FormatterOptions<
     | "preserveMultiline"
 >;
 
-export function talonFormatter(node: Node, options: Options = {}): string {
+export function talonFormatter(
+    node: SyntaxNode,
+    options: Options = {},
+): string {
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
     const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);
@@ -45,7 +47,7 @@ class TalonFormatter {
         private preserveMultiline: boolean,
     ) {}
 
-    getText(node: Node): string {
+    getText(node: SyntaxNode): string {
         const nodeText = this.getNodeText(node);
 
         if (nodeText.length === 0) {
@@ -59,7 +61,10 @@ class TalonFormatter {
         return nodeText;
     }
 
-    private getLeftRightText(node: Node, forceMultiline: boolean): string {
+    private getLeftRightText(
+        node: SyntaxNode,
+        forceMultiline: boolean,
+    ): string {
         const [leftNode, _colonNode, ...rightNodes] = node.children;
         const left = this.getNodeText(leftNode);
 
@@ -92,7 +97,7 @@ class TalonFormatter {
         return `${left}:${this.eol}${right}`;
     }
 
-    private getNodeText(node: Node, isIndented = false): string {
+    private getNodeText(node: SyntaxNode, isIndented = false): string {
         const nl = node.startPosition.row > this.lastRow + 1 ? this.eol : "";
         this.lastRow = node.endPosition.row;
         const text = this.getNodeTextInternal(node, isIndented);
@@ -100,7 +105,7 @@ class TalonFormatter {
         return `${nl}${text}`;
     }
 
-    private pairWithChildren(node: Node) {
+    private pairWithChildren(node: SyntaxNode) {
         const { children } = node;
         const pre = children[0].text;
         const post = children[children.length - 1].text;
@@ -111,7 +116,7 @@ class TalonFormatter {
         return `${pre}${middle}${post}`;
     }
 
-    private getNodeTextInternal(node: Node, isIndented = false): string {
+    private getNodeTextInternal(node: SyntaxNode, isIndented = false): string {
         switch (node.type) {
             case "source_file":
                 return node.children
@@ -234,6 +239,9 @@ class TalonFormatter {
     }
 }
 
-function isLeftRightSingleLine(left: Node, rights: Node[]): boolean {
+function isLeftRightSingleLine(
+    left: SyntaxNode,
+    rights: SyntaxNode[],
+): boolean {
     return left.endPosition.row === rights[rights.length - 1].startPosition.row;
 }

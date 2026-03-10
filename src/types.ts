@@ -39,3 +39,17 @@ export interface EditorConfigOptions extends KnownProps {
     column_width?: number | "unset";
     preserve_multiline?: boolean | "unset";
 }
+
+interface Point {
+    row: number;
+    column: number;
+}
+
+export interface SyntaxNode {
+    id: number;
+    text: string;
+    type: string;
+    startPosition: Point;
+    endPosition: Point;
+    children: SyntaxNode[];
+}

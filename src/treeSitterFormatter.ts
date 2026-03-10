@@ -1,5 +1,4 @@
-import type { Node } from "web-tree-sitter";
-import type { FormatterOptions } from "./types.js";
+import type { FormatterOptions, SyntaxNode } from "./types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "./util/constants.js";
 import { getEndOfLine } from "./util/getEndOfLine.js";
 import { getIndentation } from "./util/getIndentation.js";
@@ -8,7 +7,10 @@ type Options = FormatterOptions<
     "endOfLine" | "indentTabs" | "indentSize" | "insertFinalNewline"
 >;
 
-export function treeSitterFormatter(node: Node, options: Options = {}): string {
+export function treeSitterFormatter(
+    node: SyntaxNode,
+    options: Options = {},
+): string {
     const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);
     const formatter = new TreeSitterFormatter(
@@ -28,7 +30,7 @@ class TreeSitterFormatter {
         private insertFinalNewline: boolean,
     ) {}
 
-    getText(node: Node): string {
+    getText(node: SyntaxNode): string {
         const nodeText = this.getNodeText(node, 0);
 
         if (nodeText.length === 0) {
@@ -42,7 +44,7 @@ class TreeSitterFormatter {
         return nodeText;
     }
 
-    private getNodeText(node: Node, numIndents: number): string {
+    private getNodeText(node: SyntaxNode, numIndents: number): string {
         const nl = node.startPosition.row > this.lastRow + 1 ? this.eol : "";
         this.lastRow = node.endPosition.row;
         const text = this.getNodeTextInternal(node, numIndents);
@@ -50,7 +52,7 @@ class TreeSitterFormatter {
         return `${nl}${text}`;
     }
 
-    private getNamedNodeText(node: Node, numIndents: number): string {
+    private getNamedNodeText(node: SyntaxNode, numIndents: number): string {
         const index = node.children.findIndex((n) => n.type === ")");
         const first = node.children
             .slice(0, 2)
@@ -75,7 +77,7 @@ class TreeSitterFormatter {
         ].join(this.eol);
     }
 
-    private getListText(node: Node, numIndents: number): string {
+    private getListText(node: SyntaxNode, numIndents: number): string {
         const index = node.children.findIndex((n) => n.type === "]");
         const first = node.children[0].text;
         const last = node.children
@@ -92,7 +94,7 @@ class TreeSitterFormatter {
         return parts.join(this.eol);
     }
 
-    private getPredicateText(node: Node, numIndents: number): string {
+    private getPredicateText(node: SyntaxNode, numIndents: number): string {
         const first = node.children[0].text;
         const last = node.children[node.children.length - 1].text;
         const parts = [
@@ -119,7 +121,10 @@ class TreeSitterFormatter {
         ].join(this.eol);
     }
 
-    private getFieldDefinitionText(node: Node, numIndents: number): string {
+    private getFieldDefinitionText(
+        node: SyntaxNode,
+        numIndents: number,
+    ): string {
         // Field definition directly in document root
         if (numIndents === 0) {
             return ["(_", this.getFieldDefinitionText(node, 1), ")"].join(
@@ -136,7 +141,7 @@ class TreeSitterFormatter {
         ].join("");
     }
 
-    private getNodeTextInternal(node: Node, numIndents: number): string {
+    private getNodeTextInternal(node: SyntaxNode, numIndents: number): string {
         switch (node.type) {
             case "program":
                 return this.joinLines(node.children, 0);
@@ -197,7 +202,7 @@ class TreeSitterFormatter {
         }
     }
 
-    private joinLines(nodes: Node[], numIndents: number): string {
+    private joinLines(nodes: SyntaxNode[], numIndents: number): string {
         if (nodes.length === 0) {
             return "";
         }

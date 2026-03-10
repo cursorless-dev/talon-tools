@@ -1,6 +1,6 @@
 {
     "name": "@cursorless/talon-tools",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Cursorless Dev",
     "license": "MIT",
@@ -34,7 +34,7 @@
     "scripts": {
         "prepack": "npm run build",
         "build": "tsc -p . && tsx ./src/build.ts",
-        "clean": "rm -rf out",
+        "clean": "rm -rf out/*",
         "lint": "npm run lint:ts &&npm run lint:fmt",
         "lint:ts": "tsc -p . --noEmit && eslint src",
         "lint:fmt": "prettier --check .",
