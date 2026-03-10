@@ -15,6 +15,7 @@ interface Options {
     readonly lineWidth?: number;
     readonly columnWidth?: number;
     readonly insertFinalNewline?: boolean;
+    readonly preserveMultiline?: boolean;
 }
 
 export function talonFormatter(node: Node, options: Options = {}): string {
@@ -27,6 +28,7 @@ export function talonFormatter(node: Node, options: Options = {}): string {
         options.lineWidth ?? DEFAULT_LINE_WIDTH,
         columnWidth,
         options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE,
+        options.preserveMultiline ?? false,
     );
     return formatter.getText(node);
 }
@@ -40,6 +42,7 @@ class TalonFormatter {
         private lineWidth: number,
         private columnWidth: number | undefined,
         private insertFinalNewline: boolean,
+        private preserveMultiline: boolean,
     ) {}
 
     getText(node: Node): string {
@@ -56,20 +59,30 @@ class TalonFormatter {
         return nodeText;
     }
 
-    private getLeftRightText(node: Node): string {
+    private getLeftRightText(node: Node, forceMultiline: boolean): string {
         const [leftNode, _colonNode, ...rightNodes] = node.children;
         const left = this.getNodeText(leftNode);
 
-        if (rightNodes.length === 1) {
-            if (isLeftRightSingleLine(leftNode, rightNodes)) {
+        if (!forceMultiline && rightNodes.length === 1) {
+            if (
+                !this.preserveMultiline ||
+                isLeftRightSingleLine(leftNode, rightNodes)
+            ) {
+                const lastRow = this.lastRow;
                 const right = this.getNodeText(rightNodes[0]);
-                const leftWithPadding =
-                    this.columnWidth != null
-                        ? `${left}: `.padEnd(this.columnWidth)
-                        : `${left}: `;
-                if (leftWithPadding.length + right.length <= this.lineWidth) {
-                    return leftWithPadding + right;
+                if (!right.includes(this.eol)) {
+                    const leftWithPadding =
+                        this.columnWidth != null
+                            ? `${left}: `.padEnd(this.columnWidth)
+                            : `${left}: `;
+                    if (
+                        leftWithPadding.length + right.length <=
+                        this.lineWidth
+                    ) {
+                        return leftWithPadding + right;
+                    }
                 }
+                this.lastRow = lastRow;
             }
         }
 
@@ -135,8 +148,10 @@ class TalonFormatter {
             case "face_declaration":
             case "gamepad_declaration":
             case "deck_declaration":
+                return this.getLeftRightText(node, false);
+
             case "settings_declaration":
-                return this.getLeftRightText(node);
+                return this.getLeftRightText(node, true);
 
             case "comment": {
                 // When using crlf eol comments have a trailing `\r`

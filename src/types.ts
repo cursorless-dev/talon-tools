@@ -21,6 +21,7 @@ export interface Options {
     maxLineLength?: number;
     columnWidth?: number;
     insertFinalNewline?: boolean;
+    preserveMultiline?: boolean;
 }
 
 export interface ParsedArgs {
@@ -34,4 +35,5 @@ export interface ParsedArgs {
 export interface EditorConfigOptions extends KnownProps {
     max_line_length?: number | "unset";
     column_width?: number | "unset";
+    preserve_multiline?: boolean | "unset";
 }

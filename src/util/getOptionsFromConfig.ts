@@ -29,15 +29,16 @@ export async function getOptionsFromConfig(filePath: string): Promise<Options> {
         options.columnWidth = config.column_width;
     }
 
-    if (config.end_of_line != null && config.end_of_line !== "unset") {
-        options.endOfLine = config.end_of_line;
+    if (typeof config.insert_final_newline === "boolean") {
+        options.insertFinalNewline = config.insert_final_newline;
     }
 
-    if (
-        config.insert_final_newline != null &&
-        config.insert_final_newline !== "unset"
-    ) {
-        options.insertFinalNewline = config.insert_final_newline;
+    if (typeof config.preserve_multiline === "boolean") {
+        options.preserveMultiline = config.preserve_multiline;
+    }
+
+    if (config.end_of_line != null && config.end_of_line !== "unset") {
+        options.endOfLine = config.end_of_line;
     }
 
     return options;

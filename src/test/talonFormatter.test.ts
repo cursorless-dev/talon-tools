@@ -194,6 +194,7 @@ suite("Talon formatter", () => {
 
         const actual = talonFormatter(rootNode, {
             endOfLine: "crlf",
+            preserveMultiline: true,
         });
 
         assert.equal(actual, "foo:\r\n    edit.left()\r\n");
@@ -207,6 +208,7 @@ suite("Talon formatter", () => {
 
         const actual = talonFormatter(rootNode, {
             indentTabs: true,
+            preserveMultiline: true,
         });
 
         assert.equal(actual, "foo:\n\tedit.left()\n");
@@ -220,6 +222,7 @@ suite("Talon formatter", () => {
 
         const actual = talonFormatter(rootNode, {
             indentWidth: 2,
+            preserveMultiline: true,
         });
 
         assert.equal(actual, "foo:\n  edit.left()\n");
@@ -235,7 +238,7 @@ suite("Talon formatter", () => {
             insertFinalNewline: false,
         });
 
-        assert.equal(actual, "foo:\n    edit.left()");
+        assert.equal(actual, "foo: edit.left()");
     });
 
     test("lineWidth: 7", async () => {
@@ -255,6 +258,16 @@ suite("Talon formatter", () => {
         const actual = talonFormatter(rootNode);
 
         assert.equal(actual, `foo:\n    ${right}\n`);
+    });
+
+    test("preserveMultiline: true", async () => {
+        const rootNode = await parseText("aaa:\n    bbb", "tree-sitter-talon");
+
+        const actual = talonFormatter(rootNode, {
+            preserveMultiline: true,
+        });
+
+        assert.equal(actual, "aaa:\n    bbb\n");
     });
 });
 

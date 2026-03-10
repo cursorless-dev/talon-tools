@@ -34,6 +34,7 @@ Supported `.editorconfig` properties:
 | `indent_size`          | Set indentation width               | `4`      |
 | `max_line_length`      | Set preferred maximum line width    | `80`     |
 | `insert_final_newline` | Ensure the file ends with a newline | `true`   |
+| `preserve_multiline`   | Keep existing multi-line formatting | `false`  |
 | `column_width`         | Set aligned left-column width       |          |
 
 Use `--` to mark the end of options. Any following arguments are treated as
