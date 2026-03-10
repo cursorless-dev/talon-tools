@@ -131,14 +131,6 @@ suite("Snippet formatter", () => {
             assert.equal(actual, expected);
         });
     }
-
-    test("endOfLine: CRLF", () => {
-        const actual = snippetFormatter("name: foo", {
-            endOfLine: "crlf",
-        });
-
-        assert.equal(actual, "name: foo\r\n---\r\n");
-    });
 });
 
 function getContentString(content: Content): string {

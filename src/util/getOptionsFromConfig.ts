@@ -33,5 +33,12 @@ export async function getOptionsFromConfig(filePath: string): Promise<Options> {
         options.endOfLine = config.end_of_line;
     }
 
+    if (
+        config.insert_final_newline != null &&
+        config.insert_final_newline !== "unset"
+    ) {
+        options.insertFinalNewline = config.insert_final_newline;
+    }
+
     return options;
 }

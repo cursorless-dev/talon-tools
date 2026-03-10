@@ -1,4 +1,5 @@
 import type { EndOfLine } from "../types.js";
+import { DEFAULT_INSERT_FINAL_NEWLINE } from "../util/constants.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import type {
     Snippet,
@@ -9,6 +10,7 @@ import type {
 
 export interface Options {
     readonly endOfLine?: EndOfLine;
+    readonly insertFinalNewline?: boolean;
 }
 
 export function serializeSnippetFile(
@@ -16,12 +18,18 @@ export function serializeSnippetFile(
     options: Options = {},
 ): string {
     const eol = getEndOfLine(options.endOfLine);
-    const serializer = new SnippetSerializer(eol);
+    const serializer = new SnippetSerializer(
+        eol,
+        options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE,
+    );
     return serializer.getText(snippetFile);
 }
 
 class SnippetSerializer {
-    constructor(private eol: string) {}
+    constructor(
+        private eol: string,
+        private insertFinalNewline: boolean,
+    ) {}
 
     getText(snippetFile: SnippetFile): string {
         const documents: string[] = [];
@@ -39,7 +47,15 @@ class SnippetSerializer {
             .filter(Boolean)
             .join(`${this.eol}---${this.eol}${this.eol}`);
 
-        return result ? result + `${this.eol}---${this.eol}` : "";
+        if (result.length === 0) {
+            return "";
+        }
+
+        if (this.insertFinalNewline) {
+            return result + `${this.eol}---${this.eol}`;
+        }
+
+        return result + `${this.eol}---`;
     }
 
     private getDocumentText(document: SnippetHeader | Snippet): string {

@@ -78,4 +78,11 @@ suite("Talon list formatter", () => {
         });
         assert.equal(actual, "list: l\n-\n\na:        b\n");
     });
+
+    test("insertFinalNewline: false", () => {
+        const actual = talonListFormatter("list: l\n-\na:b", {
+            insertFinalNewline: false,
+        });
+        assert.equal(actual, "list: l\n-\n\na: b");
+    });
 });

@@ -7,6 +7,7 @@ suite("Snippet serializer", () => {
     test("Name only", testNameOnly);
     test("Multiple values", testMultipleValues);
     test("endOfLine: CRLF", testCrLf);
+    test("insertFinalNewline: false", testNoFinalNewline);
 });
 
 function testKeyOrder() {
@@ -121,4 +122,20 @@ function testCrLf() {
     });
 
     assert.equal(actual, "name: mySnippet\r\n---\r\n");
+}
+
+function testNoFinalNewline() {
+    const fixture: SnippetFile = {
+        header: {
+            name: "mySnippet",
+            variables: [],
+        },
+        snippets: [],
+    };
+
+    const actual = serializeSnippetFile(fixture, {
+        insertFinalNewline: false,
+    });
+
+    assert.equal(actual, "name: mySnippet\n---");
 }

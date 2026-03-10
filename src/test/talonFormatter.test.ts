@@ -225,6 +225,19 @@ suite("Talon formatter", () => {
         assert.equal(actual, "foo:\n  edit.left()\n");
     });
 
+    test("insertFinalNewline: false", async () => {
+        const rootNode = await parseText(
+            "foo:\n  edit.left()",
+            "tree-sitter-talon",
+        );
+
+        const actual = talonFormatter(rootNode, {
+            insertFinalNewline: false,
+        });
+
+        assert.equal(actual, "foo:\n    edit.left()");
+    });
+
     test("lineWidth: 7", async () => {
         const rootNode = await parseText("aaa: bbb", "tree-sitter-talon");
 

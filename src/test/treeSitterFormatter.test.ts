@@ -137,6 +137,16 @@ suite("Tree-sitter formatter", () => {
 
         assert.equal(actual, "(aaa\n  (bbb)\n)\n");
     });
+
+    test("insertFinalNewline: false", async () => {
+        const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
+
+        const actual = treeSitterFormatter(rootNode, {
+            insertFinalNewline: false,
+        });
+
+        assert.equal(actual, "(aaa\n    (bbb)\n)");
+    });
 });
 
 function getContentString(content: Content): string {

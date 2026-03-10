@@ -27,12 +27,14 @@ current working directory and loads `.editorconfig` relative to that path.
 
 Supported `.editorconfig` properties:
 
-| Property          | Meaning                            |
-| ----------------- | ---------------------------------- |
-| `indent_style`    | Use tabs or spaces for indentation |
-| `indent_size`     | Set indentation width              |
-| `max_line_length` | Set preferred maximum line width   |
-| `column_width`    | Set aligned left-column width      |
+| Property               | Meaning                             | Default  |
+| ---------------------- | ----------------------------------- | -------- |
+| `end_of_line`          | Set output line endings             | `lf`     |
+| `indent_style`         | Use tabs or spaces for indentation  | `spaces` |
+| `indent_size`          | Set indentation width               | `4`      |
+| `max_line_length`      | Set preferred maximum line width    | `80`     |
+| `insert_final_newline` | Ensure the file ends with a newline | `true`   |
+| `column_width`         | Set aligned left-column width       |          |
 
 Use `--` to mark the end of options. Any following arguments are treated as
 file, directory, or glob patterns even if they start with `--`.

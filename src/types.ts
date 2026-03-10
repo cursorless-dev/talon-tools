@@ -15,11 +15,12 @@ export interface CLI {
 export type EndOfLine = "lf" | "crlf";
 
 export interface Options {
+    endOfLine?: EndOfLine;
     indentTabs?: boolean;
     indentSize?: number;
     maxLineLength?: number;
     columnWidth?: number;
-    endOfLine?: EndOfLine;
+    insertFinalNewline?: boolean;
 }
 
 export interface ParsedArgs {

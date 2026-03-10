@@ -1,6 +1,9 @@
 import type { Node } from "web-tree-sitter";
 import type { EndOfLine } from "../types.js";
-import { DEFAULT_LINE_WIDTH } from "../util/constants.js";
+import {
+    DEFAULT_INSERT_FINAL_NEWLINE,
+    DEFAULT_LINE_WIDTH,
+} from "../util/constants.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
@@ -11,6 +14,7 @@ interface Options {
     readonly indentWidth?: number;
     readonly lineWidth?: number;
     readonly columnWidth?: number;
+    readonly insertFinalNewline?: boolean;
 }
 
 export function talonFormatter(node: Node, options: Options = {}): string {
@@ -22,6 +26,7 @@ export function talonFormatter(node: Node, options: Options = {}): string {
         eol,
         options.lineWidth ?? DEFAULT_LINE_WIDTH,
         columnWidth,
+        options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE,
     );
     return formatter.getText(node);
 }
@@ -34,10 +39,21 @@ class TalonFormatter {
         private eol: string,
         private lineWidth: number,
         private columnWidth: number | undefined,
+        private insertFinalNewline: boolean,
     ) {}
 
     getText(node: Node): string {
-        return this.getNodeText(node) + this.eol;
+        const nodeText = this.getNodeText(node);
+
+        if (nodeText.length === 0) {
+            return "";
+        }
+
+        if (this.insertFinalNewline) {
+            return nodeText + this.eol;
+        }
+
+        return nodeText;
     }
 
     private getLeftRightText(node: Node): string {
