@@ -28,12 +28,12 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_ENV
 
-      - name: Create Git tag
-        run: |
-          git tag ${{ env.version }}
-          git push origin ${{ env.version }}
-
       - name: Publish to npm
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Git tag
+        run: |
+          git tag ${{ env.version }}
+          git push origin ${{ env.version }}
