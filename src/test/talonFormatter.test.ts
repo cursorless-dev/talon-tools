@@ -1,25 +1,57 @@
 import * as assert from "node:assert";
 import { talonFormatter } from "../talon/talonFormatter.js";
-import type { SyntaxNode } from "../types.js";
 import { parseText } from "../util/parseText.js";
+import type { Content } from "./testUtils.js";
+import {
+    captureStreamWrite,
+    createNode,
+    getContentString,
+} from "./testUtils.js";
 
-type Content = string | string[];
-
-const fixtures: { title: string; pre: Content; post: Content }[] = [
+const fixtures: {
+    title: string;
+    columnWidth?: number;
+    pre: Content;
+    post: Content;
+}[] = [
     {
-        title: "matchers",
+        title: "Matchers",
         pre: ["app  :  vscode", "", "and  not  mode :  command", "-", ""],
         post: ["app: vscode", "", "and not mode: command", "-", ""],
     },
 
     {
-        title: "command singe line",
+        title: "Command single line",
         pre: "foo  :  edit.left(  )",
-        post: ["foo:                        edit.left()", ""],
+        post: ["foo: edit.left()", ""],
     },
 
     {
-        title: "command multi line",
+        title: "Empty header",
+        pre: "\n-\na:b",
+        post: "a: b\n",
+    },
+
+    {
+        title: "Pipe padding",
+        pre: "a|b:c",
+        post: "a | b: c\n",
+    },
+
+    {
+        title: "Unnecessary parentheses",
+        pre: "(a):b",
+        post: "a: b\n",
+    },
+
+    {
+        title: "Comment before divider",
+        pre: "# a\n-\nb: c",
+        post: "# a\n-\nb: c\n",
+    },
+
+    {
+        title: "Command multi line",
         pre: [
             "foo  : ",
             "  # actions",
@@ -40,7 +72,7 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
     },
 
     {
-        title: "settings declaration",
+        title: "Settings declaration",
         pre: [
             "settings()  :  ",
             "  speech.timeout  =  0.400",
@@ -57,7 +89,7 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
     },
 
     {
-        title: "tag/key/gamepad/parrot/face declarations",
+        title: "Tag/key/gamepad/parrot/face declarations",
         pre: [
             "tag()  :  user.some_tag",
             "key( enter )  :  'key'",
@@ -68,11 +100,11 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
         ],
         post: [
             "tag(): user.some_tag",
-            "key(enter):                 'key'",
-            "gamepad(north):             'gamepad'",
-            "parrot(pop):                'parrot'",
-            "noise(pop):                 'noise'",
-            "face(smile):                'face'",
+            "key(enter): 'key'",
+            "gamepad(north): 'gamepad'",
+            "parrot(pop): 'parrot'",
+            "noise(pop): 'noise'",
+            "face(smile): 'face'",
             "",
         ],
     },
@@ -80,7 +112,7 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
     {
         title: "CRLF comment",
         pre: "# Hello\r\nfoo: 'bar'",
-        post: "# Hello\nfoo:                        'bar'\n",
+        post: "# Hello\nfoo: 'bar'\n",
     },
 
     {
@@ -97,6 +129,7 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
 
     {
         title: "Large file",
+        columnWidth: 28,
         pre: `\
 not   mode  : command
 tag :  stuff
@@ -180,18 +213,12 @@ suite("Talon formatter", () => {
             const content = getContentString(fixture.pre);
             const rootNode = await parseText(content, "tree-sitter-talon");
             const actual = talonFormatter(rootNode, {
-                columnWidth: 28,
+                columnWidth: fixture.columnWidth,
             });
             const expected = getContentString(fixture.post);
             assert.equal(actual, expected);
         });
     }
-
-    test("comment before divider", async () => {
-        const rootNode = await parseText("# a\n-\nb: c", "tree-sitter-talon");
-        const actual = talonFormatter(rootNode);
-        assert.equal(actual, "# a\n-\nb: c\n");
-    });
 
     test("endOfLine: CRLF", async () => {
         const rootNode = await parseText(
@@ -276,40 +303,3 @@ suite("Talon formatter", () => {
         );
     });
 });
-
-function getContentString(content: Content): string {
-    return Array.isArray(content) ? content.join("\n") : content;
-}
-
-function createNode(type: string, text: string): SyntaxNode {
-    return {
-        id: 1,
-        type,
-        text,
-        startPosition: { row: 0, column: 0 },
-        endPosition: { row: 0, column: text.length },
-        children: [],
-    };
-}
-
-async function captureStreamWrite<T>(
-    stream: NodeJS.WriteStream,
-    callback: () => Promise<T> | T,
-): Promise<{ result: T; text: string }> {
-    let text = "";
-    const originalWrite = stream.write.bind(stream);
-
-    (stream.write as unknown as (chunk: string) => boolean) = (
-        chunk: string | Uint8Array,
-    ) => {
-        text += chunk.toString();
-        return true;
-    };
-
-    try {
-        const result = await callback();
-        return { result, text };
-    } finally {
-        stream.write = originalWrite;
-    }
-}

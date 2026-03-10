@@ -1,7 +1,7 @@
 import * as assert from "node:assert";
 import { snippetFormatter } from "../snippet/snippetFormatter.js";
-
-type Content = string | string[];
+import type { Content } from "./testUtils.js";
+import { getContentString } from "./testUtils.js";
 
 const fixtures: {
     title: string;
@@ -132,7 +132,3 @@ suite("Snippet formatter", () => {
         });
     }
 });
-
-function getContentString(content: Content): string {
-    return Array.isArray(content) ? content.join("\n") : content;
-}

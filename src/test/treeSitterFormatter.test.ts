@@ -1,9 +1,12 @@
 import * as assert from "node:assert";
 import { treeSitterFormatter } from "../treeSitterFormatter.js";
-import type { SyntaxNode } from "../types.js";
 import { parseText } from "../util/parseText.js";
-
-type Content = string | string[];
+import type { Content } from "./testUtils.js";
+import {
+    captureStreamWrite,
+    createNode,
+    getContentString,
+} from "./testUtils.js";
 
 const fixtures: { title: string; pre: Content; post: Content }[] = [
     {
@@ -11,21 +14,25 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
         pre: ["(aaa", "    (bbb", "      (ccc)", "    ", ")", ")"],
         post: ["(aaa", "    (bbb", "        (ccc)", "    )", ")", ""],
     },
+
     {
         title: "Anonymous node",
         pre: '";" ?  @namedFunction.end  @functionName.domain.end',
         post: '";"? @namedFunction.end @functionName.domain.end\n',
     },
+
     {
         title: "Field definition in root",
         pre: ";;\nlhs: (rhs)",
         post: ";;\n(_\n    lhs: (rhs)\n)\n",
     },
+
     {
         title: "Trailing comment ws",
         pre: ";; Hello world ",
         post: ";; Hello world\n",
     },
+
     {
         title: "Trailing ?",
         pre: '(("." (type))?)?',
@@ -38,6 +45,7 @@ const fixtures: { title: string; pre: Content; post: Content }[] = [
 )?
 `,
     },
+
     {
         title: "Large file",
         pre: `\
@@ -162,40 +170,3 @@ suite("Tree-sitter formatter", () => {
         );
     });
 });
-
-function getContentString(content: Content): string {
-    return Array.isArray(content) ? content.join("\n") : content;
-}
-
-function createNode(type: string, text: string): SyntaxNode {
-    return {
-        id: 1,
-        type,
-        text,
-        startPosition: { row: 0, column: 0 },
-        endPosition: { row: 0, column: text.length },
-        children: [],
-    };
-}
-
-async function captureStreamWrite<T>(
-    stream: NodeJS.WriteStream,
-    callback: () => Promise<T> | T,
-): Promise<{ result: T; text: string }> {
-    let text = "";
-    const originalWrite = stream.write.bind(stream);
-
-    (stream.write as unknown as (chunk: string) => boolean) = (
-        chunk: string | Uint8Array,
-    ) => {
-        text += chunk.toString();
-        return true;
-    };
-
-    try {
-        const result = await callback();
-        return { result, text };
-    } finally {
-        stream.write = originalWrite;
-    }
-}

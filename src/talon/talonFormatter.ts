@@ -112,14 +112,20 @@ class TalonFormatter {
         return `${nl}${text}`;
     }
 
-    private pairWithChildren(node: SyntaxNode) {
+    private pairWithChildren(
+        node: SyntaxNode,
+        unwrap: boolean = false,
+    ): string {
         const { children } = node;
-        const pre = children[0].text;
-        const post = children[children.length - 1].text;
         const middle = children
             .slice(1, -1)
             .map((n) => this.getNodeText(n))
             .join(" ");
+        if (unwrap) {
+            return middle;
+        }
+        const pre = children[0].text;
+        const post = children[children.length - 1].text;
         return `${pre}${middle}${post}`;
     }
 
@@ -133,7 +139,7 @@ class TalonFormatter {
 
             case "matches": {
                 // There are no match nodes and there is no comment before
-                if (node.children.length < 2 && this.lastRow === 0) {
+                if (node.children.length < 2 && isFirstChild(node)) {
                     return "";
                 }
                 return node.children
@@ -205,6 +211,11 @@ class TalonFormatter {
                 return node.text.trim();
 
             case "parenthesized_rule":
+                return this.pairWithChildren(
+                    node,
+                    node.parent != null && rangeEqual(node, node.parent),
+                );
+
             case "optional":
                 return this.pairWithChildren(node);
 
@@ -253,4 +264,17 @@ function isLeftRightSingleLine(
     rights: SyntaxNode[],
 ): boolean {
     return left.endPosition.row === rights[rights.length - 1].startPosition.row;
+}
+
+function rangeEqual(a: SyntaxNode, b: SyntaxNode): boolean {
+    return (
+        a.startPosition.row === b.startPosition.row &&
+        a.startPosition.column === b.startPosition.column &&
+        a.endPosition.row === b.endPosition.row &&
+        a.endPosition.column === b.endPosition.column
+    );
+}
+
+function isFirstChild(node: SyntaxNode): boolean {
+    return node.parent?.children.findIndex((n) => n.id === node.id) === 0;
 }

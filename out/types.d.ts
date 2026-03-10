@@ -54,6 +54,7 @@ export interface SyntaxNode {
     type: string;
     startPosition: Point;
     endPosition: Point;
+    parent: SyntaxNode | null;
     children: SyntaxNode[];
 }
 export {};
