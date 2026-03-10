@@ -13,6 +13,7 @@ import { parseArgs } from "../util/parseArgs.js";
 import { parseFilePatterns } from "../util/parseFilePatterns.js";
 import { printHelp } from "../util/printHelp.js";
 import { printVersion } from "../util/printVersion.js";
+import { setExitCode } from "../util/setExitCode.js";
 
 export async function main(cli: CLI): Promise<void> {
     let logger = createLogger();
@@ -21,10 +22,10 @@ export async function main(cli: CLI): Promise<void> {
         const args = parseArgs(process.argv.slice(2));
         logger = createLogger(args.quiet);
         const exitCode = await mainUnsafe({ cli, args, logger });
-        process.exit(exitCode);
+        setExitCode(exitCode);
     } catch (error) {
         logger.error(getErrorMessage(error));
-        process.exit(EXIT_ERROR);
+        setExitCode(EXIT_ERROR);
     }
 }
 
