@@ -132,7 +132,8 @@ class TalonFormatter {
                     .join(this.eol);
 
             case "matches": {
-                if (node.children.length < 2) {
+                // There are no match nodes and there is no comment before
+                if (node.children.length < 2 && this.lastRow === 0) {
                     return "";
                 }
                 return node.children
