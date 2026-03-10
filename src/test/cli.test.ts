@@ -9,10 +9,12 @@ import { formatFile, formatFiles, mainFormatStdin } from "../cli/cli.js";
 import type {
     CLI,
     EditorConfigOptions,
+    Logger,
     Options,
     ParsedArgs,
 } from "../types.js";
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
+import { createLogger } from "../util/createLogger.js";
 import { getDefaultArguments } from "../util/getDefaultArguments.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
@@ -25,9 +27,16 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger(true);
 
         try {
-            const didChange = await formatFile(cli, false, fileName);
+            const didChange = await formatFile({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePath: fileName,
+            });
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -44,9 +53,16 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger(true);
 
         try {
-            const didChange = await formatFile(cli, true, fileName);
+            const didChange = await formatFile({
+                cli,
+                logger,
+                check: true,
+                debug: false,
+                filePath: fileName,
+            });
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -63,15 +79,19 @@ suite("CLI", () => {
         const cli = createCLI((text) =>
             text === "changed" ? "changed updated" : text,
         );
+        const logger = createLogger(true);
 
         try {
             await fs.writeFile(unchangedFileName, "unchanged", "utf8");
             await fs.writeFile(changedFileName, "changed", "utf8");
 
-            const changedFileCount = await formatFiles(cli, false, [
-                unchangedFileName,
-                changedFileName,
-            ]);
+            const changedFileCount = await formatFiles({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePaths: [unchangedFileName, changedFileName],
+            });
             const unchangedContent = await fs.readFile(
                 unchangedFileName,
                 "utf8",
@@ -89,8 +109,15 @@ suite("CLI", () => {
     test("Ignores missing files", async () => {
         const fileName = path.join(os.tmpdir(), "talonfmt-missing.txt");
         const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger(true);
 
-        const didChange = await formatFile(cli, false, fileName);
+        const didChange = await formatFile({
+            cli,
+            logger,
+            check: false,
+            debug: false,
+            filePath: fileName,
+        });
 
         assert.equal(didChange, false);
     });
@@ -104,13 +131,20 @@ suite("CLI", () => {
         const cli = createCLI(
             (_text, options) => `indentSize=${options.indentSize ?? "unset"}`,
         );
+        const logger = createLogger(true);
 
         try {
             await writeEditorConfig(fileName, {
                 indent_size: 2,
             });
 
-            const didChange = await formatFile(cli, false, fileName);
+            const didChange = await formatFile({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePath: fileName,
+            });
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -129,6 +163,7 @@ suite("CLI", () => {
         const cli = createCLI(
             (_text, options) => `indentSize=${options.indentSize ?? "unset"}`,
         );
+        const logger = createLogger(true);
 
         try {
             await writeEditorConfig(fileName, {
@@ -136,7 +171,13 @@ suite("CLI", () => {
                 tab_width: 3,
             });
 
-            const didChange = await formatFile(cli, false, fileName);
+            const didChange = await formatFile({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePath: fileName,
+            });
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -156,13 +197,20 @@ suite("CLI", () => {
             (_text, options) =>
                 `maxLineLength=${options.maxLineLength ?? "unset"}`,
         );
+        const logger = createLogger(true);
 
         try {
             await writeEditorConfig(fileName, {
                 max_line_length: 80,
             });
 
-            const didChange = await formatFile(cli, false, fileName);
+            const didChange = await formatFile({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePath: fileName,
+            });
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -181,13 +229,20 @@ suite("CLI", () => {
         const cli = createCLI(
             (_text, options) => `endOfLine=${options.endOfLine ?? "unset"}`,
         );
+        const logger = createLogger(true);
 
         try {
             await writeEditorConfig(fileName, {
                 end_of_line: "crlf",
             });
 
-            const didChange = await formatFile(cli, false, fileName);
+            const didChange = await formatFile({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePath: fileName,
+            });
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
@@ -206,10 +261,17 @@ suite("CLI", () => {
         const cli = createCLI(() => {
             throw new Error("boom");
         });
+        const logger = createLogger(true);
 
         try {
             await assert.rejects(
-                formatFile(cli, false, fileName),
+                formatFile({
+                    cli,
+                    logger,
+                    check: false,
+                    debug: false,
+                    filePath: fileName,
+                }),
                 /Failed to format '.*example\.txt': boom/,
             );
         } finally {
@@ -219,8 +281,9 @@ suite("CLI", () => {
 
     test("Writes formatted stdin to stdout", async () => {
         const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger();
         const output = await captureStreamWrite(process.stdout, async () =>
-            readAndFormatStdin(cli, "content"),
+            readAndFormatStdin(cli, logger, "content"),
         );
 
         assert.equal(output.result, EXIT_OK);
@@ -229,21 +292,23 @@ suite("CLI", () => {
 
     test("Reports stdin formatting issues to stderr in check mode", async () => {
         const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger();
         const output = await captureStreamWrite(process.stderr, async () =>
-            readAndFormatStdin(cli, "content", true),
+            readAndFormatStdin(cli, logger, "content", true),
         );
 
         assert.equal(output.result, EXIT_FAIL);
-        assert.equal(output.text, "[warn] Code style issues found in stdin.");
+        assert.equal(output.text, "[warn] Code style issues found in stdin.\n");
     });
 
     test("Returns success for unchanged stdin in check mode", async () => {
         const cli = createCLI((text) => text);
+        const logger = createLogger();
         const stderr = await captureStreamWrite(process.stderr, async () =>
-            readAndFormatStdin(cli, "content", true),
+            readAndFormatStdin(cli, logger, "content", true),
         );
         const stdout = await captureStreamWrite(process.stdout, async () =>
-            readAndFormatStdin(cli, "content", true),
+            readAndFormatStdin(cli, logger, "content", true),
         );
 
         assert.equal(stderr.result, EXIT_OK);
@@ -277,6 +342,7 @@ suite("CLI", () => {
                 return Promise.resolve(text);
             },
         };
+        const logger = createLogger(true);
 
         try {
             await writeEditorConfig(fileName, {
@@ -284,7 +350,13 @@ suite("CLI", () => {
                 indent_size: 2,
                 column_width: 24,
             });
-            await formatFile(cli, false, fileName);
+            await formatFile({
+                cli,
+                logger,
+                check: false,
+                debug: false,
+                filePath: fileName,
+            });
 
             assert.equal(actualText, "content");
             assert.deepEqual(actualOptions, expectedOptions);
@@ -315,6 +387,7 @@ suite("CLI", () => {
                 return Promise.resolve(text);
             },
         };
+        const logger = createLogger(true);
 
         try {
             process.chdir(directory);
@@ -323,7 +396,12 @@ suite("CLI", () => {
                 indent_size: 2,
             });
 
-            const result = await readAndFormatStdin(cli, "content", false);
+            const result = await readAndFormatStdin(
+                cli,
+                logger,
+                "content",
+                false,
+            );
 
             assert.equal(result, EXIT_OK);
             assert.equal(actualText, "content");
@@ -341,6 +419,26 @@ suite("CLI", () => {
             check: true,
         });
         const actual = parseArgs(["--check", "a.txt", "b.txt"]);
+
+        assert.deepEqual(actual, expected);
+    });
+
+    test("Parses quiet mode", () => {
+        const expected = getArguments({
+            filePatterns: ["a.txt"],
+            quiet: true,
+        });
+        const actual = parseArgs(["--quiet", "a.txt"]);
+
+        assert.deepEqual(actual, expected);
+    });
+
+    test("Parses debug mode", () => {
+        const expected = getArguments({
+            filePatterns: ["a.txt"],
+            debug: true,
+        });
+        const actual = parseArgs(["--debug", "a.txt"]);
 
         assert.deepEqual(actual, expected);
     });
@@ -376,10 +474,42 @@ suite("CLI", () => {
                 "Options:",
                 "  --help",
                 "  --version",
+                "  --quiet",
                 "  --check",
+                "  --debug",
                 "",
             ].join("\n"),
         );
+    });
+
+    test("Captures log entries without writing when quiet", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.txt",
+            "content",
+        );
+        const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger(true);
+
+        try {
+            const output = await captureStreamWrite(process.stdout, async () =>
+                formatFile({
+                    cli,
+                    logger,
+                    check: false,
+                    debug: false,
+                    filePath: fileName,
+                }),
+            );
+
+            assert.equal(output.result, true);
+            assert.equal(output.text, "");
+            assert.deepEqual(logger.getEntries(), [
+                { level: "log", message: fileName },
+            ]);
+        } finally {
+            await cleanupTempFile(fileName);
+        }
     });
 
     test("Rejects unknown arguments", () => {
@@ -426,19 +556,30 @@ function createCLI(
         binName: "talon-fmt" as const,
         fileEndings: ["txt"],
         getStdinFileEnding: () => "txt",
-        format: (text: string, options: Options) =>
-            Promise.resolve(format(text, options)),
+        format: (
+            text: string,
+            options: Options,
+            _filePath: string,
+            _debug: boolean,
+        ) => Promise.resolve(format(text, options)),
     };
 }
 
 async function readAndFormatStdin(
     cli: CLI,
+    logger: Logger,
     input: string,
     check: boolean = false,
 ): Promise<number> {
     const stdin = new PassThrough();
     Object.defineProperty(stdin, "isTTY", { value: false });
-    const result = mainFormatStdin(cli, stdin, check);
+    const result = mainFormatStdin({
+        cli,
+        logger,
+        stdin,
+        check,
+        debug: false,
+    });
     stdin.end(input);
     return result;
 }

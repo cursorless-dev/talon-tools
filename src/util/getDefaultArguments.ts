@@ -5,6 +5,8 @@ export function getDefaultArguments(): ParsedArgs {
         filePatterns: [],
         help: false,
         version: false,
+        quiet: false,
+        debug: false,
         check: false,
     };
 }

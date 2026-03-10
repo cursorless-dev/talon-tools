@@ -1,11 +1,11 @@
 import type { KnownProps } from "editorconfig";
-export declare const KNOWN_ARGUMENTS: readonly ["--help", "--version", "--check"];
+export declare const KNOWN_ARGUMENTS: readonly ["--help", "--version", "--quiet", "--check", "--debug"];
 export type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
 export interface CLI {
     binName: "snippet-fmt" | "talon-fmt" | "tree-sitter-fmt";
     fileEndings: readonly string[];
     getStdinFileEnding(text: string): string;
-    format(text: string, options: Options, filePath: string): Promise<string>;
+    format(text: string, options: Options, filePath: string, debug: boolean): Promise<string>;
 }
 export type EndOfLine = "lf" | "crlf";
 export interface Options {
@@ -23,6 +23,21 @@ export interface ParsedArgs {
     help: boolean;
     version: boolean;
     check: boolean;
+    quiet: boolean;
+    debug: boolean;
+}
+export interface LoggerEntry {
+    level: "log" | "warn" | "error";
+    message: string;
+}
+export interface Logger {
+    log(message: string): void;
+    warn(message: string): void;
+    error(message: string): void;
+    getEntries(): readonly LoggerEntry[];
+}
+export interface DebugLogger {
+    debug(message: string): void;
 }
 export interface EditorConfigOptions extends KnownProps {
     max_line_length?: number | "unset";

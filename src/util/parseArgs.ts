@@ -35,8 +35,14 @@ function parseKnownArgument(result: ParsedArgs, arg: KnownArgument): boolean {
         case "--version":
             result.version = true;
             return true;
+        case "--quiet":
+            result.quiet = true;
+            return true;
         case "--check":
             result.check = true;
+            return true;
+        case "--debug":
+            result.debug = true;
             return true;
         default:
             return false;

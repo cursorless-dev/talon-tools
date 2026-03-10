@@ -1,8 +1,9 @@
-import type { FormatterOptions, SyntaxNode } from "../types.js";
+import type { DebugLogger, FormatterOptions, SyntaxNode } from "../types.js";
 import {
     DEFAULT_INSERT_FINAL_NEWLINE,
     DEFAULT_MAX_LINE_LENGTH,
 } from "../util/constants.js";
+import { createDebugLogger } from "../util/createLogger.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
@@ -20,6 +21,7 @@ type Options = FormatterOptions<
 export function talonFormatter(
     node: SyntaxNode,
     options: Options = {},
+    debug: boolean = false,
 ): string {
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
     const indentation = getIndentation(options.indentTabs, options.indentSize);
@@ -31,12 +33,14 @@ export function talonFormatter(
         columnWidth,
         options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE,
         options.preserveMultiline ?? false,
+        debug,
     );
     return formatter.getText(node);
 }
 
 class TalonFormatter {
     private lastRow = 0;
+    private logger: DebugLogger;
 
     constructor(
         private indent: string,
@@ -45,7 +49,10 @@ class TalonFormatter {
         private columnWidth: number | undefined,
         private insertFinalNewline: boolean,
         private preserveMultiline: boolean,
-    ) {}
+        debug: boolean,
+    ) {
+        this.logger = createDebugLogger(debug);
+    }
 
     getText(node: SyntaxNode): string {
         const nodeText = this.getNodeText(node);
@@ -225,6 +232,7 @@ class TalonFormatter {
             case "end_anchor":
             case "repeat":
             case "deck(":
+            case "repeat1":
             case "(":
             case ")":
             case "=":
@@ -233,7 +241,7 @@ class TalonFormatter {
                 return node.text;
 
             default:
-                console.warn(`Unknown syntax node type '${node.type}'`);
+                this.logger.debug(`Unknown syntax node type '${node.type}'`);
                 return node.text;
         }
     }

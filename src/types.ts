@@ -1,6 +1,12 @@
 import type { KnownProps } from "editorconfig";
 
-export const KNOWN_ARGUMENTS = ["--help", "--version", "--check"] as const;
+export const KNOWN_ARGUMENTS = [
+    "--help",
+    "--version",
+    "--quiet",
+    "--check",
+    "--debug",
+] as const;
 
 export type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
 
@@ -9,7 +15,12 @@ export interface CLI {
     fileEndings: readonly string[];
 
     getStdinFileEnding(text: string): string;
-    format(text: string, options: Options, filePath: string): Promise<string>;
+    format(
+        text: string,
+        options: Options,
+        filePath: string,
+        debug: boolean,
+    ): Promise<string>;
 }
 
 export type EndOfLine = "lf" | "crlf";
@@ -31,6 +42,24 @@ export interface ParsedArgs {
     help: boolean;
     version: boolean;
     check: boolean;
+    quiet: boolean;
+    debug: boolean;
+}
+
+export interface LoggerEntry {
+    level: "log" | "warn" | "error";
+    message: string;
+}
+
+export interface Logger {
+    log(message: string): void;
+    warn(message: string): void;
+    error(message: string): void;
+    getEntries(): readonly LoggerEntry[];
+}
+
+export interface DebugLogger {
+    debug(message: string): void;
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */

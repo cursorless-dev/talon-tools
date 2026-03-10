@@ -1,5 +1,6 @@
 import * as assert from "node:assert";
 import { talonFormatter } from "../talon/talonFormatter.js";
+import type { SyntaxNode } from "../types.js";
 import { parseText } from "../util/parseText.js";
 
 type Content = string | string[];
@@ -269,8 +270,54 @@ suite("Talon formatter", () => {
 
         assert.equal(actual, "aaa:\n    bbb\n");
     });
+
+    test("Debug logs unknown syntax node types", async () => {
+        const rootNode = createNode("mystery", "value");
+        const output = await captureStreamWrite(process.stderr, () =>
+            talonFormatter(rootNode, {}, true),
+        );
+
+        assert.equal(output.result, "value\n");
+        assert.equal(
+            output.text,
+            "[debug] Unknown syntax node type 'mystery'\n",
+        );
+    });
 });
 
 function getContentString(content: Content): string {
     return Array.isArray(content) ? content.join("\n") : content;
+}
+
+function createNode(type: string, text: string): SyntaxNode {
+    return {
+        id: 1,
+        type,
+        text,
+        startPosition: { row: 0, column: 0 },
+        endPosition: { row: 0, column: text.length },
+        children: [],
+    };
+}
+
+async function captureStreamWrite<T>(
+    stream: NodeJS.WriteStream,
+    callback: () => Promise<T> | T,
+): Promise<{ result: T; text: string }> {
+    let text = "";
+    const originalWrite = stream.write.bind(stream);
+
+    (stream.write as unknown as (chunk: string) => boolean) = (
+        chunk: string | Uint8Array,
+    ) => {
+        text += chunk.toString();
+        return true;
+    };
+
+    try {
+        const result = await callback();
+        return { result, text };
+    } finally {
+        stream.write = originalWrite;
+    }
 }

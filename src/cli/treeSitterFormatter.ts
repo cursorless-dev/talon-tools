@@ -14,8 +14,8 @@ void main({
         return fileEnding;
     },
 
-    format: async (text, options) => {
+    format: async (text, options, _filePath, debug) => {
         const node = await parseText(text, "tree-sitter-query");
-        return treeSitterFormatter(node, options);
+        return treeSitterFormatter(node, options, debug);
     },
 });

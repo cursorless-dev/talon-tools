@@ -3,8 +3,9 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as process from "node:process";
 import type { Readable } from "node:stream";
-import type { CLI } from "../types.js";
+import type { CLI, Logger, ParsedArgs } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
+import { createLogger } from "../util/createLogger.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
 import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
 import { isMissingFileError } from "../util/isMissingFileError.js";
@@ -14,18 +15,30 @@ import { printHelp } from "../util/printHelp.js";
 import { printVersion } from "../util/printVersion.js";
 
 export async function main(cli: CLI): Promise<void> {
+    let logger = createLogger();
+
     try {
-        const exitCode = await mainUnsafe(cli);
+        const args = parseArgs(process.argv.slice(2));
+        logger = createLogger(args.quiet);
+        const exitCode = await mainUnsafe({ cli, args, logger });
         process.exit(exitCode);
     } catch (error) {
-        console.error(getErrorMessage(error));
+        logger.error(getErrorMessage(error));
         process.exit(EXIT_ERROR);
     }
 }
 
-async function mainUnsafe(cli: CLI): Promise<number> {
-    const args = parseArgs(process.argv.slice(2));
+interface MainUnsafeArgs {
+    cli: CLI;
+    args: ParsedArgs;
+    logger: Logger;
+}
 
+async function mainUnsafe({
+    cli,
+    args,
+    logger,
+}: MainUnsafeArgs): Promise<number> {
     if (args.help) {
         printHelp(cli);
         return EXIT_OK;
@@ -39,13 +52,25 @@ async function mainUnsafe(cli: CLI): Promise<number> {
     const hasFilePatterns = args.filePatterns.length > 0;
 
     if (hasFilePatterns) {
-        return mainFormatFiles(cli, args.check, args.filePatterns);
+        return mainFormatFiles({
+            cli,
+            logger,
+            check: args.check,
+            debug: args.debug,
+            filePatterns: args.filePatterns,
+        });
     }
 
     // If no file patterns are provided, check if there's input from stdin.
     // If stdin TTY it's an interactive terminal, so we shouldn't read from it.
     if (!process.stdin.isTTY) {
-        return mainFormatStdin(cli, process.stdin, args.check);
+        return mainFormatStdin({
+            cli,
+            logger,
+            stdin: process.stdin,
+            check: args.check,
+            debug: args.debug,
+        });
     }
 
     throw new Error(
@@ -53,48 +78,82 @@ async function mainUnsafe(cli: CLI): Promise<number> {
     );
 }
 
-async function mainFormatFiles(
-    cli: CLI,
-    check: boolean,
-    filePatterns: string[],
-): Promise<number> {
+interface MainFormatFilesArgs {
+    cli: CLI;
+    logger: Logger;
+    check: boolean;
+    debug: boolean;
+    filePatterns: string[];
+}
+
+async function mainFormatFiles({
+    cli,
+    logger,
+    check,
+    debug,
+    filePatterns,
+}: MainFormatFilesArgs): Promise<number> {
     if (check) {
-        console.log("Checking formatting...");
+        logger.log("Checking formatting...");
     }
 
     const filePaths = await parseFilePatterns(cli, filePatterns);
-    const changedFileCount = await formatFiles(cli, check, filePaths);
+    const changedFileCount = await formatFiles({
+        cli,
+        logger,
+        check,
+        debug,
+        filePaths,
+    });
 
     if (check) {
         if (changedFileCount > 0) {
-            console.warn(
-                `[warn] Code style issues found in ${changedFileCount} file(s).`,
+            logger.warn(
+                `Code style issues found in ${changedFileCount} file(s).`,
             );
             return EXIT_FAIL;
         }
 
-        console.log("All matched files use correct code style!");
+        logger.log("All matched files use correct code style!");
         return EXIT_OK;
     }
 
     if (changedFileCount > 0) {
-        console.log(`Formatted ${changedFileCount} file(s).`);
+        logger.log(`Formatted ${changedFileCount} file(s).`);
     } else {
-        console.log("All files are already formatted.");
+        logger.log("All files are already formatted.");
     }
 
     return EXIT_OK;
 }
 
-export async function formatFiles(
-    cli: CLI,
-    check: boolean,
-    filePaths: string[],
-): Promise<number> {
+interface FormatFilesArgs {
+    cli: CLI;
+    logger: Logger;
+    check: boolean;
+    debug: boolean;
+    filePaths: string[];
+}
+
+export async function formatFiles({
+    cli,
+    logger,
+    check,
+    debug,
+    filePaths,
+}: FormatFilesArgs): Promise<number> {
     let changedFileCount = 0;
 
     for (const fileName of filePaths) {
-        if (await formatFile(cli, check, fileName)) {
+        if (
+            await formatFile({
+                cli,
+                logger,
+                check,
+                debug,
+                filePath: fileName,
+            })
+        ) {
             changedFileCount++;
         }
     }
@@ -102,24 +161,34 @@ export async function formatFiles(
     return changedFileCount;
 }
 
-export async function formatFile(
-    cli: CLI,
-    check: boolean,
-    filePath: string,
-): Promise<boolean> {
+interface FormatFileArgs {
+    cli: CLI;
+    logger: Logger;
+    check: boolean;
+    debug: boolean;
+    filePath: string;
+}
+
+export async function formatFile({
+    cli,
+    logger,
+    check,
+    debug,
+    filePath,
+}: FormatFileArgs): Promise<boolean> {
     try {
         const options = await getOptionsFromConfig(filePath);
         const content = await fs.readFile(filePath, "utf8");
-        const formatted = await cli.format(content, options, filePath);
+        const formatted = await cli.format(content, options, filePath, debug);
 
         if (formatted === content) {
             return false;
         }
 
         if (check) {
-            console.warn(`[warn] ${filePath}`);
+            logger.warn(filePath);
         } else {
-            console.log(filePath);
+            logger.log(filePath);
             await fs.writeFile(filePath, formatted, "utf8");
         }
 
@@ -138,21 +207,31 @@ export async function formatFile(
     }
 }
 
-export async function mainFormatStdin(
-    cli: CLI,
-    stdin: Readable,
-    check: boolean,
-): Promise<number> {
+interface MainFormatStdinArgs {
+    cli: CLI;
+    logger: Logger;
+    stdin: Readable;
+    check: boolean;
+    debug: boolean;
+}
+
+export async function mainFormatStdin({
+    cli,
+    logger,
+    stdin,
+    check,
+    debug,
+}: MainFormatStdinArgs): Promise<number> {
     const input = await getStdin({ stdin });
     const fileEnding = cli.getStdinFileEnding(input);
     const fileName = `stdin.${fileEnding}`;
     const filePath = path.resolve(fileName);
     const options = await getOptionsFromConfig(filePath);
-    const formatted = await cli.format(input, options, filePath);
+    const formatted = await cli.format(input, options, filePath, debug);
 
     if (check) {
         if (input !== formatted) {
-            process.stderr.write("[warn] Code style issues found in stdin.");
+            logger.warn("Code style issues found in stdin.");
             return EXIT_FAIL;
         }
 

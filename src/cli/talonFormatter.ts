@@ -16,14 +16,14 @@ void main({
         return textIsList(text) ? fileEndingTalonList : fileEndingTalon;
     },
 
-    format: async (text, options, filePath) => {
+    format: async (text, options, filePath, debug) => {
         if (isListFile(text, filePath)) {
             const updated = talonListFormatter(text, options);
             return Promise.resolve(updated);
         }
 
         const node = await parseText(text, "tree-sitter-talon");
-        return talonFormatter(node, options);
+        return talonFormatter(node, options, debug);
     },
 });
 

@@ -18,7 +18,11 @@ All binaries support these options:
 | ----------- | -------------------------------- |
 | `--help`    | Show help                        |
 | `--version` | Show version                     |
+| `--quiet`   | Suppress non-error output        |
 | `--check`   | Check formatting without writing |
+| `--debug`   | Print debug output               |
+
+Use `--debug` when diagnosing parser or formatter support for new syntax.
 
 ## Formatting options
 

@@ -1,5 +1,6 @@
-import type { FormatterOptions, SyntaxNode } from "./types.js";
+import type { DebugLogger, FormatterOptions, SyntaxNode } from "./types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "./util/constants.js";
+import { createDebugLogger } from "./util/createLogger.js";
 import { getEndOfLine } from "./util/getEndOfLine.js";
 import { getIndentation } from "./util/getIndentation.js";
 
@@ -10,6 +11,7 @@ type Options = FormatterOptions<
 export function treeSitterFormatter(
     node: SyntaxNode,
     options: Options = {},
+    debug: boolean = false,
 ): string {
     const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);
@@ -17,18 +19,23 @@ export function treeSitterFormatter(
         indentation,
         eol,
         options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE,
+        debug,
     );
     return formatter.getText(node);
 }
 
 class TreeSitterFormatter {
     private lastRow = 0;
+    private logger: DebugLogger;
 
     constructor(
         private indentation: string,
         private eol: string,
         private insertFinalNewline: boolean,
-    ) {}
+        debug: boolean,
+    ) {
+        this.logger = createDebugLogger(debug);
+    }
 
     getText(node: SyntaxNode): string {
         const nodeText = this.getNodeText(node, 0);
@@ -197,7 +204,7 @@ class TreeSitterFormatter {
             }
 
             default:
-                console.warn(`Unknown syntax node type '${node.type}'`);
+                this.logger.debug(`Unknown syntax node type '${node.type}'`);
                 return node.text;
         }
     }
