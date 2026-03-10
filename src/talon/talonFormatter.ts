@@ -276,5 +276,5 @@ function rangeEqual(a: SyntaxNode, b: SyntaxNode): boolean {
 }
 
 function isFirstChild(node: SyntaxNode): boolean {
-    return node.parent?.children.findIndex((n) => n.id === node.id) === 0;
+    return node.id === node.parent?.children?.[0]?.id;
 }
