@@ -1,5 +1,5 @@
 import * as assert from "node:assert";
-import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
+import { treeSitterFormatter } from "../treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
 
 type Content = string | string[];

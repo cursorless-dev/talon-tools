@@ -8,12 +8,15 @@
     "license": "MIT",
     "type": "module",
     "files": [
-        "out"
+        "out",
+        "!out/test",
+        "!out/cli",
+        "!out/build.*"
     ],
-    "types": "./out/lib/index.d.ts",
+    "types": "./out/lib.d.ts",
     "exports": {
         ".": {
-            "types": "./out/lib/index.d.ts",
+            "types": "./out/lib.d.ts",
             "default": "./out/lib.js"
         }
     },

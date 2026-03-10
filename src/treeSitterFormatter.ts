@@ -1,7 +1,7 @@
 import type { Node } from "web-tree-sitter";
-import type { EndOfLine } from "../types.js";
-import { getEndOfLine } from "../util/getEndOfLine.js";
-import { getIndentation } from "../util/getIndentation.js";
+import type { EndOfLine } from "./types.js";
+import { getEndOfLine } from "./util/getEndOfLine.js";
+import { getIndentation } from "./util/getIndentation.js";
 
 interface Options {
     readonly endOfLine?: EndOfLine;

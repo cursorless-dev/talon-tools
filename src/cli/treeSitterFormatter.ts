@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { treeSitterFormatter } from "../lib/treeSitterFormatter.js";
+import { treeSitterFormatter } from "../treeSitterFormatter.js";
 import { parseText } from "../util/parseText.js";
 import { main } from "./cli.js";
 

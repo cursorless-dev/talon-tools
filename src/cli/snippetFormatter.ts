@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { snippetFormatter } from "../lib/snippetFormatter.js";
+import { snippetFormatter } from "../snippet/snippetFormatter.js";
 import { main } from "./cli.js";
 
 const fileEnding = "snippet";

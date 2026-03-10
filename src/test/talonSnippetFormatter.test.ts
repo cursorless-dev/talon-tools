@@ -1,5 +1,5 @@
 import * as assert from "node:assert";
-import { snippetFormatter } from "../lib/snippetFormatter.js";
+import { snippetFormatter } from "../snippet/snippetFormatter.js";
 
 type Content = string | string[];
 

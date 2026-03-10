@@ -12,7 +12,7 @@ export async function build() {
         sourcemap: true,
 
         entryPoints: {
-            lib: "src/lib/index.ts",
+            lib: "src/lib.ts",
             snippetFormatter: "src/cli/snippetFormatter.ts",
             talonFormatter: "src/cli/talonFormatter.ts",
             treeSitterFormatter: "src/cli/treeSitterFormatter.ts",
