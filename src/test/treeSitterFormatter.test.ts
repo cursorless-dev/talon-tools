@@ -108,7 +108,17 @@ suite("Tree-sitter formatter", () => {
         });
     }
 
-    test("uses tabs for indentation when requested", async () => {
+    test("endOfLine: CRLF", async () => {
+        const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
+
+        const actual = treeSitterFormatter(rootNode, {
+            endOfLine: "crlf",
+        });
+
+        assert.equal(actual, "(aaa\r\n    (bbb)\r\n)\r\n");
+    });
+
+    test("indentTabs: true", async () => {
         const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
 
         const actual = treeSitterFormatter(rootNode, {
@@ -118,14 +128,14 @@ suite("Tree-sitter formatter", () => {
         assert.equal(actual, "(aaa\n\t(bbb)\n)\n");
     });
 
-    test("uses CRLF when requested", async () => {
+    test("indentWidth: 2", async () => {
         const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
 
         const actual = treeSitterFormatter(rootNode, {
-            endOfLine: "crlf",
+            indentWidth: 2,
         });
 
-        assert.equal(actual, "(aaa\r\n    (bbb)\r\n)\r\n");
+        assert.equal(actual, "(aaa\n  (bbb)\n)\n");
     });
 });
 

@@ -16,7 +16,7 @@ export function treeSitterFormatter(node: Node, options: Options = {}): string {
     return formatter.getText(node);
 }
 
-export class TreeSitterFormatter {
+class TreeSitterFormatter {
     private lastRow = 0;
 
     constructor(

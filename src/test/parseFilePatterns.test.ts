@@ -5,7 +5,7 @@ import path from "node:path";
 import { parseFilePatterns } from "../util/parseFilePatterns.js";
 import type { CLI } from "../types.js";
 
-suite("parseFilePatterns", () => {
+suite("Parse file patterns", () => {
     test("Returns explicit files as absolute paths", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();

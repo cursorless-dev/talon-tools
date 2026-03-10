@@ -50,7 +50,6 @@
         "editorconfig": "^3.0.2",
         "fast-glob": "^3.3.3",
         "get-stdin": "^10.0.0",
-        "talon-snippets": "^1.3.0",
         "web-tree-sitter": "^0.26.6"
     },
     "devDependencies": {

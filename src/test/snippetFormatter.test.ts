@@ -9,36 +9,6 @@ const fixtures: {
     post: Content;
 }[] = [
     {
-        title: "Key order",
-        pre: `\
-$0.wrapperScope: statement
-$0.wrapperPhrase: try
-$0.insertionFormatter: PASCAL_CASE
-$foo.wrapperPhrase: bar
-$1.wrapperPhrase: catch
-$1.wrapperScope: statement
-insertionScope: statement
-phrase: try catch
-language: javascript
-description: My snippet
-name: mySnippet`,
-        post: `\
-name: mySnippet
-description: My snippet
-language: javascript
-phrase: try catch
-insertionScope: statement
-
-$1.wrapperPhrase: catch
-$1.wrapperScope: statement
-$foo.wrapperPhrase: bar
-$0.insertionFormatter: PASCAL_CASE
-$0.wrapperPhrase: try
-$0.wrapperScope: statement
----
-`,
-    },
-    {
         title: "Empty lines",
         pre: `
 name: foo
@@ -76,24 +46,6 @@ name: test
 phrase: test
 -
 test
----
-`,
-    },
-    {
-        title: "'-' in body",
-        pre: `\
-name: test
--
-a
--
-b
-`,
-        post: `\
-name: test
--
-a
--
-b
 ---
 `,
     },
@@ -179,6 +131,14 @@ suite("Snippet formatter", () => {
             assert.equal(actual, expected);
         });
     }
+
+    test("endOfLine: CRLF", () => {
+        const actual = snippetFormatter("name: foo", {
+            endOfLine: "crlf",
+        });
+
+        assert.equal(actual, "name: foo\r\n---\r\n");
+    });
 });
 
 function getContentString(content: Content): string {

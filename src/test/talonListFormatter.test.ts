@@ -43,13 +43,13 @@ bat:      b
     },
 
     {
-        title: "CRLF",
+        title: "CRLF input",
         pre: "list: l\r\n-\r\na:b",
         post: "list: l\n-\n\na:        b\n",
     },
 
     {
-        title: "Custom column width",
+        title: "fmt column width comment",
         pre: "list: l\n-\n# fmt: columnWidth=5\na:b",
         post: "list: l\n-\n\n# fmt: columnWidth=5\na:   b\n",
     },
@@ -65,12 +65,17 @@ suite("Talon list formatter", () => {
         });
     }
 
-    test("Uses CRLF when requested", () => {
+    test("endOfLine: CRLF", () => {
         const actual = talonListFormatter("list: l\n-\na:b", {
-            columnWidth: 10,
             endOfLine: "crlf",
         });
+        assert.equal(actual, "list: l\r\n-\r\n\r\na: b\r\n");
+    });
 
-        assert.equal(actual, "list: l\r\n-\r\n\r\na:        b\r\n");
+    test("columnWidth: 10", () => {
+        const actual = talonListFormatter("list: l\n-\na:b", {
+            columnWidth: 10,
+        });
+        assert.equal(actual, "list: l\n-\n\na:        b\n");
     });
 });
