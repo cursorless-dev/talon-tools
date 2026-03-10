@@ -1,7 +1,7 @@
 {
     "name": "talon-tools",
     "displayName": "Talon tools",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Andreas Arvidsson",
     "publisher": "AndreasArvidsson",
