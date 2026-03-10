@@ -16,6 +16,7 @@ import type {
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { createLogger } from "../util/createLogger.js";
 import { getDefaultArguments } from "../util/getDefaultArguments.js";
+import { normalizeToPosix } from "../util/normalizeToPosix.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { printHelp } from "../util/printHelp.js";
 
@@ -68,7 +69,7 @@ suite("CLI", () => {
             assert.equal(didChange, true);
             assert.equal(actual, "content");
             assert.deepEqual(logger.getEntries(), [
-                { level: "log", message: fileName },
+                { level: "log", message: getDisplayPath(fileName) },
             ]);
         } finally {
             await cleanupTempFile(fileName);
@@ -331,7 +332,7 @@ suite("CLI", () => {
             assert.equal(stdout.text, "");
             assert.equal(stderr.text, "");
             assert.deepEqual(logger.getEntries(), [
-                { level: "log", message: fileName },
+                { level: "log", message: getDisplayPath(fileName) },
             ]);
         } finally {
             await cleanupTempFile(fileName);
@@ -359,7 +360,11 @@ suite("CLI", () => {
             assert.equal(output.result, EXIT_FAIL);
             assert.equal(
                 output.stdoutText,
-                ["Checking formatting...", `${fileName}`, ""].join("\n"),
+                [
+                    "Checking formatting...",
+                    `${getDisplayPath(fileName)}`,
+                    "",
+                ].join("\n"),
             );
             assert.equal(
                 output.stderrText,
@@ -576,7 +581,7 @@ suite("CLI", () => {
             assert.equal(output.result, true);
             assert.equal(output.text, "");
             assert.deepEqual(logger.getEntries(), [
-                { level: "log", message: fileName },
+                { level: "log", message: getDisplayPath(fileName) },
             ]);
         } finally {
             await cleanupTempFile(fileName);
@@ -713,4 +718,8 @@ function getArguments(args: Partial<ParsedArgs>) {
         ...getDefaultArguments(),
         ...args,
     };
+}
+
+function getDisplayPath(filePath: string): string {
+    return normalizeToPosix(path.relative(process.cwd(), filePath));
 }

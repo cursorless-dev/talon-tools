@@ -11,6 +11,7 @@ import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
 import { isMissingFileError } from "../util/isMissingFileError.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { parseFilePatterns } from "../util/parseFilePatterns.js";
+import { normalizeToPosix } from "../util/normalizeToPosix.js";
 import { printHelp } from "../util/printHelp.js";
 import { printVersion } from "../util/printVersion.js";
 import { setExitCode } from "../util/setExitCode.js";
@@ -180,7 +181,7 @@ export async function formatFile({
             return false;
         }
 
-        logger.log(filePath);
+        logger.log(getDisplayPath(filePath));
 
         if (!check) {
             await fs.writeFile(filePath, formatted, "utf8");
@@ -199,6 +200,10 @@ export async function formatFile({
             },
         );
     }
+}
+
+function getDisplayPath(filePath: string): string {
+    return normalizeToPosix(path.relative(process.cwd(), filePath));
 }
 
 interface MainFormatStdinArgs {
