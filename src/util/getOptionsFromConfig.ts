@@ -29,5 +29,9 @@ export async function getOptionsFromConfig(filePath: string): Promise<Options> {
         options.columnWidth = config.column_width;
     }
 
+    if (config.end_of_line != null && config.end_of_line !== "unset") {
+        options.endOfLine = config.end_of_line;
+    }
+
     return options;
 }

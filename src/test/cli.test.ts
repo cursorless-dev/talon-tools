@@ -172,6 +172,31 @@ suite("CLI", () => {
         }
     });
 
+    test("Passes end of line from .editorconfig", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.talon",
+            "content",
+        );
+        const cli = createCLI(
+            (_text, options) => `endOfLine=${options.endOfLine ?? "unset"}`,
+        );
+
+        try {
+            await writeEditorConfig(fileName, {
+                end_of_line: "crlf",
+            });
+
+            const didChange = await formatFile(cli, false, fileName);
+            const actual = await fs.readFile(fileName, "utf8");
+
+            assert.equal(didChange, true);
+            assert.equal(actual, "endOfLine=crlf");
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
     test("Wraps formatter errors", async () => {
         const fileName = await createTempFile(
             "talonfmt-",

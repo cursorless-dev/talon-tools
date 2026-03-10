@@ -1,7 +1,10 @@
+import type { EndOfLine } from "../types.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
+import { getEndOfLine } from "../util/getEndOfLine.js";
 import { parseTalonList } from "./parseTalonList.js";
 
 interface Options {
+    readonly endOfLine?: EndOfLine;
     readonly columnWidth?: number;
 }
 
@@ -10,6 +13,7 @@ export function talonListFormatter(
     options: Options = {},
 ): string {
     const columnWidth = getColumnWidth(text) ?? options.columnWidth;
+    const eol = getEndOfLine(options.endOfLine);
     const talonList = parseTalonList(text);
     talonList.headers.sort((a, _b) =>
         a.type === "header" && a.key === "list" ? -1 : 0,
@@ -48,5 +52,5 @@ export function talonListFormatter(
 
     result.push("");
 
-    return result.join("\n");
+    return result.join(eol);
 }

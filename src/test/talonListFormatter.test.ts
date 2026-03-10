@@ -64,4 +64,13 @@ suite("Talon list formatter", () => {
             assert.equal(actual, fixture.post);
         });
     }
+
+    test("Uses CRLF when requested", () => {
+        const actual = talonListFormatter("list: l\n-\na:b", {
+            columnWidth: 10,
+            endOfLine: "crlf",
+        });
+
+        assert.equal(actual, "list: l\r\n-\r\n\r\na:        b\r\n");
+    });
 });

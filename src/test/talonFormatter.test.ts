@@ -217,6 +217,19 @@ suite("Talon formatter", () => {
 
         assert.equal(actual, `foo:\n    ${right}\n`);
     });
+
+    test("Uses CRLF when requested", async () => {
+        const rootNode = await parseText(
+            "foo:\n  edit.left()",
+            "tree-sitter-talon",
+        );
+
+        const actual = talonFormatter(rootNode, {
+            endOfLine: "crlf",
+        });
+
+        assert.equal(actual, "foo:\r\n    edit.left()\r\n");
+    });
 });
 
 function getContentString(content: Content): string {

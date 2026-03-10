@@ -1,28 +1,35 @@
 import type { Node } from "web-tree-sitter";
+import type { EndOfLine } from "../types.js";
+import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
 
 interface Options {
+    readonly endOfLine?: EndOfLine;
     readonly indentTabs?: boolean;
     readonly indentWidth?: number;
 }
 
 export function treeSitterFormatter(node: Node, options: Options = {}): string {
     const indentation = getIndentation(options.indentTabs, options.indentWidth);
-    const formatter = new TreeSitterFormatter(indentation);
+    const eol = getEndOfLine(options.endOfLine);
+    const formatter = new TreeSitterFormatter(indentation, eol);
     return formatter.getText(node);
 }
 
 export class TreeSitterFormatter {
     private lastRow = 0;
 
-    constructor(private indentation: string) {}
+    constructor(
+        private indentation: string,
+        private eol: string,
+    ) {}
 
     getText(node: Node): string {
-        return this.getNodeText(node, 0) + "\n";
+        return this.getNodeText(node, 0) + this.eol;
     }
 
     private getNodeText(node: Node, numIndents: number): string {
-        const nl = node.startPosition.row > this.lastRow + 1 ? "\n" : "";
+        const nl = node.startPosition.row > this.lastRow + 1 ? this.eol : "";
         this.lastRow = node.endPosition.row;
         const text = this.getNodeTextInternal(node, numIndents);
         this.lastRow = node.endPosition.row;
@@ -51,7 +58,7 @@ export class TreeSitterFormatter {
             `${this.getIndent(numIndents)}${first}`,
             ...interior,
             `${this.getIndent(numIndents)}${last}`,
-        ].join("\n");
+        ].join(this.eol);
     }
 
     private getListText(node: Node, numIndents: number): string {
@@ -68,7 +75,7 @@ export class TreeSitterFormatter {
                 .map((n) => this.getNodeText(n, numIndents + 1)),
             `${this.getIndent(numIndents)}${last}`,
         ];
-        return parts.join("\n");
+        return parts.join(this.eol);
     }
 
     private getPredicateText(node: Node, numIndents: number): string {
@@ -95,13 +102,15 @@ export class TreeSitterFormatter {
                 .slice(1)
                 .map((s) => `${this.getIndent(numIndents + 1)}${s}`),
             `${this.getIndent(numIndents)}${last}`,
-        ].join("\n");
+        ].join(this.eol);
     }
 
     private getFieldDefinitionText(node: Node, numIndents: number): string {
         // Field definition directly in document root
         if (numIndents === 0) {
-            return ["(_", this.getFieldDefinitionText(node, 1), ")"].join("\n");
+            return ["(_", this.getFieldDefinitionText(node, 1), ")"].join(
+                this.eol,
+            );
         }
         // [lhs, ":", rhs]
         return [
@@ -182,7 +191,7 @@ export class TreeSitterFormatter {
         const nodesToUse = lastIsQuantifier ? nodes.slice(0, -1) : nodes;
         const text = nodesToUse
             .map((n) => this.getNodeText(n, numIndents))
-            .join("\n");
+            .join(this.eol);
         return lastIsQuantifier
             ? `${text}${nodes[nodes.length - 1].text}`
             : text;

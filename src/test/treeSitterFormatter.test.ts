@@ -117,6 +117,16 @@ suite("Tree-sitter formatter", () => {
 
         assert.equal(actual, "(aaa\n\t(bbb)\n)\n");
     });
+
+    test("uses CRLF when requested", async () => {
+        const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
+
+        const actual = treeSitterFormatter(rootNode, {
+            endOfLine: "crlf",
+        });
+
+        assert.equal(actual, "(aaa\r\n    (bbb)\r\n)\r\n");
+    });
 });
 
 function getContentString(content: Content): string {

@@ -12,11 +12,14 @@ export interface CLI {
     format(text: string, options: Options, filePath: string): Promise<string>;
 }
 
+export type EndOfLine = "lf" | "crlf";
+
 export interface Options {
     indentTabs?: boolean;
     indentSize?: number;
     maxLineLength?: number;
     columnWidth?: number;
+    endOfLine?: EndOfLine;
 }
 
 export interface ParsedArgs {

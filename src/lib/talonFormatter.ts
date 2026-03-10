@@ -1,9 +1,12 @@
 import type { Node } from "web-tree-sitter";
-import { getColumnWidth } from "../util/getColumnWidth.js";
-import { getIndentation } from "../util/getIndentation.js";
+import type { EndOfLine } from "../types.js";
 import { DEFAULT_LINE_WIDTH } from "../util/constants.js";
+import { getColumnWidth } from "../util/getColumnWidth.js";
+import { getEndOfLine } from "../util/getEndOfLine.js";
+import { getIndentation } from "../util/getIndentation.js";
 
 interface Options {
+    readonly endOfLine?: EndOfLine;
     readonly indentTabs?: boolean;
     readonly indentWidth?: number;
     readonly lineWidth?: number;
@@ -13,8 +16,10 @@ interface Options {
 export function talonFormatter(node: Node, options: Options = {}): string {
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
     const indentation = getIndentation(options.indentTabs, options.indentWidth);
+    const eol = getEndOfLine(options.endOfLine);
     const formatter = new TalonFormatter(
         indentation,
+        eol,
         options.lineWidth ?? DEFAULT_LINE_WIDTH,
         columnWidth,
     );
@@ -26,12 +31,13 @@ class TalonFormatter {
 
     constructor(
         private indent: string,
+        private eol: string,
         private lineWidth: number,
         private columnWidth: number | undefined,
     ) {}
 
     getText(node: Node): string {
-        return this.getNodeText(node) + "\n";
+        return this.getNodeText(node) + this.eol;
     }
 
     private getLeftRightText(node: Node): string {
@@ -53,12 +59,12 @@ class TalonFormatter {
 
         const right = rightNodes
             .map((n) => this.getNodeText(n, true))
-            .join("\n");
-        return `${left}:\n${right}`;
+            .join(this.eol);
+        return `${left}:${this.eol}${right}`;
     }
 
     private getNodeText(node: Node, isIndented = false): string {
-        const nl = node.startPosition.row > this.lastRow + 1 ? "\n" : "";
+        const nl = node.startPosition.row > this.lastRow + 1 ? this.eol : "";
         this.lastRow = node.endPosition.row;
         const text = this.getNodeTextInternal(node, isIndented);
         this.lastRow = node.endPosition.row;
@@ -82,17 +88,21 @@ class TalonFormatter {
                 return node.children
                     .map((n) => this.getNodeText(n))
                     .filter(Boolean)
-                    .join("\n");
+                    .join(this.eol);
 
             case "matches": {
                 if (node.children.length < 2) {
                     return "";
                 }
-                return node.children.map((n) => this.getNodeText(n)).join("\n");
+                return node.children
+                    .map((n) => this.getNodeText(n))
+                    .join(this.eol);
             }
 
             case "declarations":
-                return node.children.map((n) => this.getNodeText(n)).join("\n");
+                return node.children
+                    .map((n) => this.getNodeText(n))
+                    .join(this.eol);
 
             case "match":
                 return node.children.map((n) => this.getNodeText(n)).join("");
@@ -100,7 +110,7 @@ class TalonFormatter {
             case "block":
                 return node.children
                     .map((n) => this.getNodeText(n, isIndented))
-                    .join("\n");
+                    .join(this.eol);
 
             case "command_declaration":
             case "key_binding_declaration":
