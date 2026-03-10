@@ -13,8 +13,8 @@ void main({
         return fileEnding;
     },
 
-    format: async (text) => {
-        const updated = snippetFormatter(text);
+    format: async (text, options) => {
+        const updated = snippetFormatter(text, options);
         return Promise.resolve(updated);
     },
 });

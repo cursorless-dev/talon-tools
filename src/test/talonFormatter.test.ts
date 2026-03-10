@@ -214,14 +214,14 @@ suite("Talon formatter", () => {
         assert.equal(actual, "foo:\n\tedit.left()\n");
     });
 
-    test("indentWidth: 2", async () => {
+    test("indentSize: 2", async () => {
         const rootNode = await parseText(
             "foo:\n  edit.left()",
             "tree-sitter-talon",
         );
 
         const actual = talonFormatter(rootNode, {
-            indentWidth: 2,
+            indentSize: 2,
             preserveMultiline: true,
         });
 
@@ -241,17 +241,17 @@ suite("Talon formatter", () => {
         assert.equal(actual, "foo: edit.left()");
     });
 
-    test("lineWidth: 7", async () => {
+    test("maxLineLength: 7", async () => {
         const rootNode = await parseText("aaa: bbb", "tree-sitter-talon");
 
         const actual = talonFormatter(rootNode, {
-            lineWidth: 7,
+            maxLineLength: 7,
         });
 
         assert.equal(actual, "aaa:\n    bbb\n");
     });
 
-    test("lineWidth: default", async () => {
+    test("maxLineLength: default", async () => {
         const right = `"${"a".repeat(76)}"`;
         const rootNode = await parseText(`foo: ${right}`, "tree-sitter-talon");
 

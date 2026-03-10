@@ -38,5 +38,5 @@ function isListFile(text: string, filePath: string): boolean {
 }
 
 function textIsList(text: string): boolean {
-    return text.startsWith("list:");
+    return text.trimStart().startsWith("list:");
 }

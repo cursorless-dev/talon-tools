@@ -24,6 +24,8 @@ export interface Options {
     preserveMultiline?: boolean;
 }
 
+export type FormatterOptions<K extends keyof Options> = Pick<Options, K>;
+
 export interface ParsedArgs {
     filePatterns: string[];
     help: boolean;

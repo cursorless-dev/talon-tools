@@ -1,31 +1,31 @@
 import type { Node } from "web-tree-sitter";
-import type { EndOfLine } from "../types.js";
+import type { FormatterOptions } from "../types.js";
 import {
     DEFAULT_INSERT_FINAL_NEWLINE,
-    DEFAULT_LINE_WIDTH,
+    DEFAULT_MAX_LINE_LENGTH,
 } from "../util/constants.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
 
-interface Options {
-    readonly endOfLine?: EndOfLine;
-    readonly indentTabs?: boolean;
-    readonly indentWidth?: number;
-    readonly lineWidth?: number;
-    readonly columnWidth?: number;
-    readonly insertFinalNewline?: boolean;
-    readonly preserveMultiline?: boolean;
-}
+type Options = FormatterOptions<
+    | "endOfLine"
+    | "indentTabs"
+    | "indentSize"
+    | "maxLineLength"
+    | "columnWidth"
+    | "insertFinalNewline"
+    | "preserveMultiline"
+>;
 
 export function talonFormatter(node: Node, options: Options = {}): string {
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
-    const indentation = getIndentation(options.indentTabs, options.indentWidth);
+    const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);
     const formatter = new TalonFormatter(
         indentation,
         eol,
-        options.lineWidth ?? DEFAULT_LINE_WIDTH,
+        options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH,
         columnWidth,
         options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE,
         options.preserveMultiline ?? false,
@@ -39,7 +39,7 @@ class TalonFormatter {
     constructor(
         private indent: string,
         private eol: string,
-        private lineWidth: number,
+        private maxLineLength: number,
         private columnWidth: number | undefined,
         private insertFinalNewline: boolean,
         private preserveMultiline: boolean,
@@ -77,7 +77,7 @@ class TalonFormatter {
                             : `${left}: `;
                     if (
                         leftWithPadding.length + right.length <=
-                        this.lineWidth
+                        this.maxLineLength
                     ) {
                         return leftWithPadding + right;
                     }

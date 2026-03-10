@@ -6,7 +6,7 @@ export const EXIT_FAIL = 1;
 export const EXIT_ERROR = 2;
 
 export const DEFAULT_INDENT_WIDTH = 4;
-export const DEFAULT_LINE_WIDTH = 80;
+export const DEFAULT_MAX_LINE_LENGTH = 80;
 export const DEFAULT_INSERT_FINAL_NEWLINE = true;
 
 export const GLOB_IGNORE_PATTERNS = [

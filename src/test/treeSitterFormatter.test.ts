@@ -128,11 +128,11 @@ suite("Tree-sitter formatter", () => {
         assert.equal(actual, "(aaa\n\t(bbb)\n)\n");
     });
 
-    test("indentWidth: 2", async () => {
+    test("indentSize: 2", async () => {
         const rootNode = await parseText("(aaa (bbb))", "tree-sitter-query");
 
         const actual = treeSitterFormatter(rootNode, {
-            indentWidth: 2,
+            indentSize: 2,
         });
 
         assert.equal(actual, "(aaa\n  (bbb)\n)\n");

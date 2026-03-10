@@ -2,7 +2,7 @@ import { DEFAULT_INDENT_WIDTH } from "./constants.js";
 
 export function getIndentation(
     indentTabs: boolean | undefined,
-    indentWidth: number | undefined,
+    indentSize: number | undefined,
 ): string {
-    return indentTabs ? "\t" : " ".repeat(indentWidth ?? DEFAULT_INDENT_WIDTH);
+    return indentTabs ? "\t" : " ".repeat(indentSize ?? DEFAULT_INDENT_WIDTH);
 }

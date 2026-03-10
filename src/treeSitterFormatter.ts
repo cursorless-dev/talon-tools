@@ -1,18 +1,15 @@
 import type { Node } from "web-tree-sitter";
-import type { EndOfLine } from "./types.js";
+import type { FormatterOptions } from "./types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "./util/constants.js";
 import { getEndOfLine } from "./util/getEndOfLine.js";
 import { getIndentation } from "./util/getIndentation.js";
 
-interface Options {
-    readonly endOfLine?: EndOfLine;
-    readonly indentTabs?: boolean;
-    readonly indentWidth?: number;
-    readonly insertFinalNewline?: boolean;
-}
+type Options = FormatterOptions<
+    "endOfLine" | "indentTabs" | "indentSize" | "insertFinalNewline"
+>;
 
 export function treeSitterFormatter(node: Node, options: Options = {}): string {
-    const indentation = getIndentation(options.indentTabs, options.indentWidth);
+    const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);
     const formatter = new TreeSitterFormatter(
         indentation,

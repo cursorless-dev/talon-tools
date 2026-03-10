@@ -102,7 +102,7 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI(
-            (_text, options) => `indentWidth=${options.indentSize ?? "unset"}`,
+            (_text, options) => `indentSize=${options.indentSize ?? "unset"}`,
         );
 
         try {
@@ -114,7 +114,7 @@ suite("CLI", () => {
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
-            assert.equal(actual, "indentWidth=2");
+            assert.equal(actual, "indentSize=2");
         } finally {
             await cleanupTempFile(fileName);
         }
@@ -127,7 +127,7 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI(
-            (_text, options) => `indentWidth=${options.indentSize ?? "unset"}`,
+            (_text, options) => `indentSize=${options.indentSize ?? "unset"}`,
         );
 
         try {
@@ -140,7 +140,7 @@ suite("CLI", () => {
             const actual = await fs.readFile(fileName, "utf8");
 
             assert.equal(didChange, true);
-            assert.equal(actual, "indentWidth=3");
+            assert.equal(actual, "indentSize=3");
         } finally {
             await cleanupTempFile(fileName);
         }

@@ -1,14 +1,12 @@
-import type { EndOfLine } from "../types.js";
+import type { FormatterOptions } from "../types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "../util/constants.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { parseTalonList } from "./parseTalonList.js";
 
-interface Options {
-    readonly endOfLine?: EndOfLine;
-    readonly columnWidth?: number;
-    readonly insertFinalNewline?: boolean;
-}
+type Options = FormatterOptions<
+    "endOfLine" | "columnWidth" | "insertFinalNewline"
+>;
 
 export function talonListFormatter(
     text: string,

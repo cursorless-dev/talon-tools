@@ -1,4 +1,4 @@
-import type { EndOfLine } from "../types.js";
+import type { FormatterOptions } from "../types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "../util/constants.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import type {
@@ -8,10 +8,7 @@ import type {
     SnippetVariable,
 } from "./snippetTypes.js";
 
-export interface Options {
-    readonly endOfLine?: EndOfLine;
-    readonly insertFinalNewline?: boolean;
-}
+export type Options = FormatterOptions<"endOfLine" | "insertFinalNewline">;
 
 export function serializeSnippetFile(
     snippetFile: SnippetFile,
