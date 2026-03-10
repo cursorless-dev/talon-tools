@@ -5,7 +5,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
-import { formatFile, formatFiles, mainFormatStdin } from "../cli/cli.js";
+import { formatFile, formatFiles, main, mainFormatStdin } from "../cli/cli.js";
 import type {
     CLI,
     EditorConfigOptions,
@@ -67,6 +67,9 @@ suite("CLI", () => {
 
             assert.equal(didChange, true);
             assert.equal(actual, "content");
+            assert.deepEqual(logger.getEntries(), [
+                { level: "log", message: fileName },
+            ]);
         } finally {
             await cleanupTempFile(fileName);
         }
@@ -299,6 +302,74 @@ suite("CLI", () => {
 
         assert.equal(output.result, EXIT_FAIL);
         assert.equal(output.text, "[warn] Code style issues found in stdin.\n");
+    });
+
+    test("Captures check-mode file entries without writing when quiet", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.txt",
+            "content",
+        );
+        const cli = createCLI((text) => `${text} updated`);
+        const logger = createLogger(true);
+
+        try {
+            const stdout = await captureStreamWrite(process.stdout, async () =>
+                formatFile({
+                    cli,
+                    logger,
+                    check: true,
+                    debug: false,
+                    filePath: fileName,
+                }),
+            );
+            const stderr = await captureStreamWrite(process.stderr, async () =>
+                Promise.resolve(),
+            );
+
+            assert.equal(stdout.result, true);
+            assert.equal(stdout.text, "");
+            assert.equal(stderr.text, "");
+            assert.deepEqual(logger.getEntries(), [
+                { level: "log", message: fileName },
+            ]);
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("Check mode reports summary and changed file paths", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.txt",
+            "content",
+        );
+        const cli = createCLI((text) => `${text} updated`);
+        const originalArgv = process.argv;
+        const originalExitCode = process.exitCode;
+
+        try {
+            process.argv = ["node", "talon-fmt", "--check", fileName];
+
+            const output = await captureStdoutAndStderr(async () => {
+                await main(cli);
+                return process.exitCode;
+            });
+
+            assert.equal(output.result, EXIT_FAIL);
+            assert.equal(
+                output.stdoutText,
+                ["Checking formatting...", `${fileName}`, ""].join("\n"),
+            );
+            assert.equal(
+                output.stderrText,
+                "[warn] Code style issues found in 1 file(s).\n",
+            );
+        } finally {
+            process.argv = originalArgv;
+            process.exitCode = originalExitCode;
+            await cleanupTempFile(fileName);
+        }
     });
 
     test("Returns success for unchanged stdin in check mode", async () => {
@@ -603,6 +674,37 @@ async function captureStreamWrite<T>(
         return { result, text };
     } finally {
         stream.write = originalWrite;
+    }
+}
+
+async function captureStdoutAndStderr<T>(
+    callback: () => Promise<T>,
+): Promise<{ result: T; stdoutText: string; stderrText: string }> {
+    let stdoutText = "";
+    let stderrText = "";
+    const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+    const originalStderrWrite = process.stderr.write.bind(process.stderr);
+
+    (process.stdout.write as unknown as (chunk: string) => boolean) = (
+        chunk: string | Uint8Array,
+    ) => {
+        stdoutText += chunk.toString();
+        return true;
+    };
+
+    (process.stderr.write as unknown as (chunk: string) => boolean) = (
+        chunk: string | Uint8Array,
+    ) => {
+        stderrText += chunk.toString();
+        return true;
+    };
+
+    try {
+        const result = await callback();
+        return { result, stdoutText, stderrText };
+    } finally {
+        process.stdout.write = originalStdoutWrite;
+        process.stderr.write = originalStderrWrite;
     }
 }
 

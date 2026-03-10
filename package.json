@@ -1,6 +1,6 @@
 {
     "name": "@cursorless/talon-tools",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Cursorless Dev",
     "license": "MIT",

@@ -119,12 +119,6 @@ async function mainFormatFiles({
         return EXIT_OK;
     }
 
-    if (changedFileCount > 0) {
-        logger.log(`Formatted ${changedFileCount} file(s).`);
-    } else {
-        logger.log("All files are already formatted.");
-    }
-
     return EXIT_OK;
 }
 
@@ -186,10 +180,9 @@ export async function formatFile({
             return false;
         }
 
-        if (check) {
-            logger.warn(filePath);
-        } else {
-            logger.log(filePath);
+        logger.log(filePath);
+
+        if (!check) {
             await fs.writeFile(filePath, formatted, "utf8");
         }
 
