@@ -72,9 +72,9 @@ repos:
   - repo: https://github.com/cursorless-dev/talon-tools
     rev: v0.1.0
     hooks:
-      - talon-fmt
-      - snippet-fmt
-      - tree-sitter-fmt
+      - id: talon-fmt
+      - id: snippet-fmt
+      - id: tree-sitter-fmt
 ```
 
 ## Guidelines

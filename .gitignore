@@ -1,3 +1,4 @@
 node_modules
-out
-.tmp-test
+out/test
+out/**/*.js.map
+out/build.*
