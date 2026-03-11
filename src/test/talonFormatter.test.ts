@@ -51,6 +51,24 @@ const fixtures: {
     },
 
     {
+        title: "Allowed string literal",
+        pre: 'a: "b"',
+        post: 'a: "b"\n',
+    },
+
+    {
+        title: "Allowed string argument",
+        pre: ["hello:", '  insert("world")', "  key(enter)"],
+        post: ["hello:", '    insert("world")', "    key(enter)", ""],
+    },
+
+    {
+        title: "Rejected string literal",
+        pre: ["hello:", '  "world"', "  key(enter)"],
+        post: ["hello:", '    insert("world")', "    key(enter)", ""],
+    },
+
+    {
         title: "Command multi line",
         pre: [
             "foo  : ",

@@ -223,6 +223,9 @@ class TalonFormatter {
             case "choice":
                 return node.children.map((n) => this.getNodeText(n)).join(" ");
 
+            case "string":
+                return formatString(node);
+
             case "tag_binding":
             case "settings_binding":
             case "capture":
@@ -237,7 +240,6 @@ class TalonFormatter {
             case "variable":
             case "word":
             case "binary_operator":
-            case "string":
             case "integer":
             case "float":
             case "start_anchor":
@@ -277,4 +279,19 @@ function rangeEqual(a: SyntaxNode, b: SyntaxNode): boolean {
 
 function isFirstChild(node: SyntaxNode): boolean {
     return node.id === node.parent?.children?.[0]?.id;
+}
+
+function formatString(node: SyntaxNode): string {
+    // A single string literal is allowed as syntactic sugar for the insert
+    // action, but not in combination with other sibling statements.
+    if (
+        node.parent?.type === "expression_statement" &&
+        node.parent.parent?.type === "block" &&
+        rangeEqual(node, node.parent) &&
+        node.parent.parent.children.length > 1
+    ) {
+        return `insert(${node.text})`;
+    }
+
+    return node.text;
 }
