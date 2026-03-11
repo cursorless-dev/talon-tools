@@ -3,12 +3,23 @@ import { serializeSnippetFile } from "../snippet/serializeSnippetFile.js";
 import type { SnippetFile } from "../snippet/snippetTypes.js";
 
 suite("Snippet serializer", () => {
+    test("Empty file", testEmptyFile);
     test("Key order", testKeyOrder);
     test("Name only", testNameOnly);
     test("Multiple values", testMultipleValues);
     test("endOfLine: CRLF", testCrLf);
     test("insertFinalNewline: false", testNoFinalNewline);
 });
+
+function testEmptyFile() {
+    const fixture: SnippetFile = {
+        snippets: [],
+    };
+
+    const actual = serializeSnippetFile(fixture);
+
+    assert.equal(actual, "");
+}
 
 function testKeyOrder() {
     const fixture: SnippetFile = {

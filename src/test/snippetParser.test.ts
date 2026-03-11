@@ -10,6 +10,9 @@ suite("Snippet parser", () => {
     test("Multiple documents", testMultipleDocuments);
     test("Multiple values", testMultipleValues);
     test("- in body", testDashInBody);
+    test("Invalid key", testInvalidKey);
+    test("Invalid variable key", testInvalidVariableKey);
+    test("Header must be first", testHeaderMustBeFirst);
 });
 
 function testFull() {
@@ -200,4 +203,34 @@ b
     const actual = parseSnippetFile(fixture);
 
     assert.deepEqual(actual, expected);
+}
+
+function testInvalidKey() {
+    assert.throws(
+        () => parseSnippetFile("unknown: test"),
+        /Invalid key 'unknown'/,
+    );
+}
+
+function testInvalidVariableKey() {
+    assert.throws(
+        () => parseSnippetFile("$0.invalidField: test"),
+        /Invalid variable key '\$0\.invalidField'/,
+    );
+}
+
+function testHeaderMustBeFirst() {
+    const fixture = `\
+name: snippet
+-
+body
+---
+
+name: header
+`;
+
+    assert.throws(
+        () => parseSnippetFile(fixture),
+        /Header snippet must be first in file/,
+    );
 }

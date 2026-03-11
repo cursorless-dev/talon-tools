@@ -13,7 +13,7 @@ import type {
     Options,
     ParsedArgs,
 } from "../types.js";
-import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
+import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { createLogger, createTestLogger } from "../util/createLogger.js";
 import { getDefaultArguments } from "../util/getDefaultArguments.js";
 import { normalizeToPosix } from "../util/normalizeToPosix.js";
@@ -377,6 +377,41 @@ suite("CLI", () => {
         }
     });
 
+    test("Check mode reports success when all files are unchanged", async () => {
+        const fileName = await createTempFile(
+            "talonfmt-",
+            "example.txt",
+            "content",
+        );
+        const cli = createCLI((text) => text);
+        const originalArgv = process.argv;
+        const originalExitCode = process.exitCode;
+
+        try {
+            process.argv = ["node", "talon-fmt", "--check", fileName];
+
+            const output = await captureStdoutAndStderr(async () => {
+                await main(cli);
+                return process.exitCode;
+            });
+
+            assert.equal(output.result, EXIT_OK);
+            assert.equal(
+                output.stdoutText,
+                [
+                    "Checking formatting...",
+                    "All matched files use correct code style!",
+                    "",
+                ].join("\n"),
+            );
+            assert.equal(output.stderrText, "");
+        } finally {
+            process.argv = originalArgv;
+            process.exitCode = originalExitCode;
+            await cleanupTempFile(fileName);
+        }
+    });
+
     test("Returns success for unchanged stdin in check mode", async () => {
         const cli = createCLI((text) => text);
         const logger = createTestLogger();
@@ -556,6 +591,58 @@ suite("CLI", () => {
                 "",
             ].join("\n"),
         );
+    });
+
+    test("Main prints version and exits successfully", async () => {
+        const cli = createCLI((text) => text);
+        const originalArgv = process.argv;
+        const originalExitCode = process.exitCode;
+
+        try {
+            process.argv = ["node", "talon-fmt", "--version"];
+
+            const output = await captureStdoutAndStderr(async () => {
+                await main(cli);
+                return process.exitCode;
+            });
+
+            assert.equal(output.result, EXIT_OK);
+            assert.match(output.stdoutText, /^\d+\.\d+\.\d+\n$/);
+            assert.equal(output.stderrText, "");
+        } finally {
+            process.argv = originalArgv;
+            process.exitCode = originalExitCode;
+        }
+    });
+
+    test("Main reports file pattern errors", async () => {
+        const cli = createCLI((text) => text);
+        const originalArgv = process.argv;
+        const originalExitCode = process.exitCode;
+        const directory = await fs.mkdtemp(path.join(os.tmpdir(), "talonfmt-"));
+        const cwd = process.cwd();
+
+        try {
+            process.chdir(directory);
+            process.argv = ["node", "talon-fmt", "**/*.txt"];
+
+            const output = await captureStdoutAndStderr(async () => {
+                await main(cli);
+                return process.exitCode;
+            });
+
+            assert.equal(output.result, EXIT_ERROR);
+            assert.equal(output.stdoutText, "");
+            assert.equal(
+                output.stderrText,
+                "[error] No files matching the pattern were found: **/*.txt\n",
+            );
+        } finally {
+            process.chdir(cwd);
+            process.argv = originalArgv;
+            process.exitCode = originalExitCode;
+            await fs.rm(directory, { recursive: true, force: true });
+        }
     });
 
     test("Captures log entries without writing when quiet", async () => {

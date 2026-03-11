@@ -51,6 +51,34 @@ suite("Parse file patterns", () => {
         }
     });
 
+    test("Expands directories with multiple supported endings", async () => {
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            await fs.writeFile(path.join(directory, "one.txt"), "one", "utf8");
+            await fs.writeFile(
+                path.join(directory, "two.talon"),
+                "two",
+                "utf8",
+            );
+            await fs.writeFile(path.join(directory, "skip.md"), "skip", "utf8");
+            process.chdir(directory);
+
+            const files = await parseFilePatterns(createCLI(["txt", "talon"]), [
+                ".",
+            ]);
+
+            assert.deepEqual(files, [
+                path.join(directory, "one.txt"),
+                path.join(directory, "two.talon"),
+            ]);
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
+
     test("Ignores hardcoded directories during directory expansion", async () => {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
@@ -99,6 +127,24 @@ suite("Parse file patterns", () => {
                 path.join(directory, "nested", "two.txt"),
                 path.join(directory, "one.txt"),
             ]);
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
+
+    test("Glob patterns filter by supported endings", async () => {
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            await fs.writeFile(path.join(directory, "one.txt"), "one", "utf8");
+            await fs.writeFile(path.join(directory, "two.md"), "two", "utf8");
+            process.chdir(directory);
+
+            const files = await parseFilePatterns(createCLI(), ["**/*.*"]);
+
+            assert.deepEqual(files, [path.join(directory, "one.txt")]);
         } finally {
             process.chdir(cwd);
             await cleanupDirectory(directory);
@@ -241,12 +287,35 @@ suite("Parse file patterns", () => {
             await cleanupDirectory(directory);
         }
     });
+
+    test("Aggregates multiple pattern errors", async () => {
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            process.chdir(directory);
+
+            await assert.rejects(
+                parseFilePatterns(createCLI(), [".", "**/*.txt"]),
+                (error: unknown) =>
+                    error instanceof FilePatternError &&
+                    error.messages.length === 2 &&
+                    error.messages[0] ===
+                        "No matching files were found in the directory: ." &&
+                    error.messages[1] ===
+                        "No files matching the pattern were found: **/*.txt",
+            );
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
 });
 
-function createCLI(): CLI {
+function createCLI(fileEndings: readonly string[] = ["txt"]): CLI {
     return {
         binName: "talon-fmt",
-        fileEndings: ["txt"],
+        fileEndings,
         getStdinFileEnding: () => "txt",
         format: (text) => Promise.resolve(text),
     };

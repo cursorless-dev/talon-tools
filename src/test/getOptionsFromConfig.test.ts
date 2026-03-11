@@ -8,6 +8,24 @@ import type { EditorConfigOptions } from "../types.js";
 import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
 
 suite("getOptionsFromConfig", () => {
+    test("indent_style: space sets indentTabs: false", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                indent_style: "space",
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                indentTabs: false,
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
     test("indent_style: tab sets indentTabs: true", async () => {
         const fileName = await createTempFile("talonfmt-", "example.talon");
 
@@ -47,6 +65,24 @@ suite("getOptionsFromConfig", () => {
         }
     });
 
+    test("indent_size: 2 sets indentSize: 2", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                indent_size: 2,
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                indentSize: 2,
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
     test("insert_final_newline: false sets insertFinalNewline: false", async () => {
         const fileName = await createTempFile("talonfmt-", "example.talon");
 
@@ -77,6 +113,42 @@ suite("getOptionsFromConfig", () => {
 
             assert.deepEqual(actual, {
                 preserveMultiline: true,
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("max_line_length: 80 sets maxLineLength: 80", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                max_line_length: 80,
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                maxLineLength: 80,
+            });
+        } finally {
+            await cleanupTempFile(fileName);
+        }
+    });
+
+    test("column_width: 24 sets columnWidth: 24", async () => {
+        const fileName = await createTempFile("talonfmt-", "example.talon");
+
+        try {
+            await writeEditorConfig(fileName, {
+                column_width: 24,
+            });
+
+            const actual = await getOptionsFromConfig(fileName);
+
+            assert.deepEqual(actual, {
+                columnWidth: 24,
             });
         } finally {
             await cleanupTempFile(fileName);

@@ -56,7 +56,9 @@ export async function parseFilePatterns(
         }
 
         const glob = normalizeToPosix(pattern);
-        const files = await fastGlob(glob, globOptions);
+        const files = (await fastGlob(glob, globOptions)).filter((file) =>
+            hasSupportedFileEnding(file, cli.fileEndings),
+        );
         if (files.length === 0) {
             errorMessages.push(
                 `No files matching the pattern were found: ${pattern}`,
@@ -78,4 +80,12 @@ function getGlobFileEndingsPattern(fileEndings: readonly string[]): string {
     return fileEndings.length === 1
         ? fileEndings[0]
         : `{${fileEndings.join(",")}}`;
+}
+
+function hasSupportedFileEnding(
+    file: string,
+    fileEndings: readonly string[],
+): boolean {
+    const extension = path.extname(file).slice(1);
+    return fileEndings.includes(extension);
 }

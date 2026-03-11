@@ -85,4 +85,10 @@ suite("Talon list formatter", () => {
         });
         assert.equal(actual, "list: l\n-\n\na: b");
     });
+
+    test("preserves key-only items", () => {
+        const actual = talonListFormatter("list: l\n-\na", {});
+
+        assert.equal(actual, "list: l\n-\n\na\n");
+    });
 });
