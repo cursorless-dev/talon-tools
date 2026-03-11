@@ -14,7 +14,7 @@ import type {
     ParsedArgs,
 } from "../types.js";
 import { EXIT_FAIL, EXIT_OK } from "../util/constants.js";
-import { createLogger } from "../util/createLogger.js";
+import { createLogger, createTestLogger } from "../util/createLogger.js";
 import { getDefaultArguments } from "../util/getDefaultArguments.js";
 import { normalizeToPosix } from "../util/normalizeToPosix.js";
 import { parseArgs } from "../util/parseArgs.js";
@@ -28,7 +28,7 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             const didChange = await formatFile({
@@ -54,7 +54,7 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             const didChange = await formatFile({
@@ -83,7 +83,7 @@ suite("CLI", () => {
         const cli = createCLI((text) =>
             text === "changed" ? "changed updated" : text,
         );
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await fs.writeFile(unchangedFileName, "unchanged", "utf8");
@@ -113,7 +113,7 @@ suite("CLI", () => {
     test("Ignores missing files", async () => {
         const fileName = path.join(os.tmpdir(), "talonfmt-missing.txt");
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         const didChange = await formatFile({
             cli,
@@ -135,7 +135,7 @@ suite("CLI", () => {
         const cli = createCLI(
             (_text, options) => `indentSize=${options.indentSize ?? "unset"}`,
         );
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await writeEditorConfig(fileName, {
@@ -167,7 +167,7 @@ suite("CLI", () => {
         const cli = createCLI(
             (_text, options) => `indentSize=${options.indentSize ?? "unset"}`,
         );
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await writeEditorConfig(fileName, {
@@ -201,7 +201,7 @@ suite("CLI", () => {
             (_text, options) =>
                 `maxLineLength=${options.maxLineLength ?? "unset"}`,
         );
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await writeEditorConfig(fileName, {
@@ -233,7 +233,7 @@ suite("CLI", () => {
         const cli = createCLI(
             (_text, options) => `endOfLine=${options.endOfLine ?? "unset"}`,
         );
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await writeEditorConfig(fileName, {
@@ -265,7 +265,7 @@ suite("CLI", () => {
         const cli = createCLI(() => {
             throw new Error("boom");
         });
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await assert.rejects(
@@ -285,7 +285,7 @@ suite("CLI", () => {
 
     test("Writes formatted stdin to stdout", async () => {
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger();
+        const logger = createTestLogger();
         const output = await captureStreamWrite(process.stdout, async () =>
             readAndFormatStdin(cli, logger, "content"),
         );
@@ -312,7 +312,7 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             const stdout = await captureStreamWrite(process.stdout, async () =>
@@ -379,7 +379,7 @@ suite("CLI", () => {
 
     test("Returns success for unchanged stdin in check mode", async () => {
         const cli = createCLI((text) => text);
-        const logger = createLogger();
+        const logger = createTestLogger();
         const stderr = await captureStreamWrite(process.stderr, async () =>
             readAndFormatStdin(cli, logger, "content", true),
         );
@@ -418,7 +418,7 @@ suite("CLI", () => {
                 return Promise.resolve(text);
             },
         };
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             await writeEditorConfig(fileName, {
@@ -463,7 +463,7 @@ suite("CLI", () => {
                 return Promise.resolve(text);
             },
         };
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             process.chdir(directory);
@@ -565,7 +565,7 @@ suite("CLI", () => {
             "content",
         );
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger(true);
+        const logger = createTestLogger();
 
         try {
             const output = await captureStreamWrite(process.stdout, async () =>

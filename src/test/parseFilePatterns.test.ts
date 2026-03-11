@@ -2,6 +2,7 @@ import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { FilePatternError } from "../util/FilePatternError.js";
 import { parseFilePatterns } from "../util/parseFilePatterns.js";
 import type { CLI } from "../types.js";
 
@@ -185,7 +186,55 @@ suite("Parse file patterns", () => {
 
             await assert.rejects(
                 parseFilePatterns(createCLI(), ["linked"]),
-                /Specified pattern "linked" is a symbolic link./,
+                (error: unknown) =>
+                    error instanceof FilePatternError &&
+                    error.messages.length === 1 &&
+                    error.messages[0] ===
+                        "Specified pattern is a symbolic link: linked",
+            );
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
+
+    test("Rejects directories with no matching files", async () => {
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            await fs.writeFile(path.join(directory, "skip.md"), "skip", "utf8");
+            process.chdir(directory);
+
+            await assert.rejects(
+                parseFilePatterns(createCLI(), ["."]),
+                (error: unknown) =>
+                    error instanceof FilePatternError &&
+                    error.messages.length === 1 &&
+                    error.messages[0] ===
+                        "No matching files were found in the directory: .",
+            );
+        } finally {
+            process.chdir(cwd);
+            await cleanupDirectory(directory);
+        }
+    });
+
+    test("Rejects unmatched glob patterns", async () => {
+        const directory = await createTempDirectory();
+        const cwd = process.cwd();
+
+        try {
+            await fs.writeFile(path.join(directory, "one.txt"), "one", "utf8");
+            process.chdir(directory);
+
+            await assert.rejects(
+                parseFilePatterns(createCLI(), ["**/*.md"]),
+                (error: unknown) =>
+                    error instanceof FilePatternError &&
+                    error.messages.length === 1 &&
+                    error.messages[0] ===
+                        "No files matching the pattern were found: **/*.md",
             );
         } finally {
             process.chdir(cwd);

@@ -1,28 +1,45 @@
 import * as process from "node:process";
-import type { DebugLogger, Logger, LoggerEntry } from "../types.js";
+import type { DebugLogger, Logger, LoggerEntry, TestLogger } from "../types.js";
+
+type LogCallback = (message: string) => void;
 
 export function createLogger(quiet: boolean = false): Logger {
+    let log: LogCallback;
+    let warn: LogCallback;
+
+    if (quiet) {
+        log = () => {};
+        warn = () => {};
+    } else {
+        log = (message: string) => {
+            process.stdout.write(`${message}\n`);
+        };
+        warn = (message: string) => {
+            process.stderr.write(`[warn] ${message}\n`);
+        };
+    }
+
+    return {
+        log,
+        warn,
+        error(message: string) {
+            process.stderr.write(`[error] ${message}\n`);
+        },
+    };
+}
+
+export function createTestLogger(): TestLogger {
     const entries: LoggerEntry[] = [];
 
     return {
         log(message: string) {
             entries.push({ level: "log", message });
-
-            if (!quiet) {
-                process.stdout.write(`${message}\n`);
-            }
         },
         warn(message: string) {
             entries.push({ level: "warn", message });
-
-            if (!quiet) {
-                process.stderr.write(`[warn] ${message}\n`);
-            }
         },
         error(message: string) {
             entries.push({ level: "error", message });
-
-            process.stderr.write(`[error] ${message}\n`);
         },
         getEntries() {
             return entries;
