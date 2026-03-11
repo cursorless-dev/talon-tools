@@ -1,4 +1,4 @@
-export { snippetFormatter } from "./snippet/snippetFormatter.js";
+export * from "./snippet/index.js";
 export { talonFormatter } from "./talon/talonFormatter.js";
 export { talonListFormatter } from "./talon/talonListFormatter.js";
 export { treeSitterFormatter } from "./treeSitterFormatter.js";
