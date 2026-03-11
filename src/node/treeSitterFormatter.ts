@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { treeSitterFormatter } from "../treeSitterFormatter.js";
-import { parseText } from "../util/parseText.js";
+import { parseText } from "./parseText.js";
 import { main } from "./cli.js";
 
 const fileEnding = "scm";

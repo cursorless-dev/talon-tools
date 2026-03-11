@@ -2,9 +2,9 @@ import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { FilePatternError } from "../util/FilePatternError.js";
-import { parseFilePatterns } from "../util/parseFilePatterns.js";
+import { parseFilePatterns } from "../node/parseFilePatterns.js";
 import type { CLI } from "../types.js";
+import { FilePatternError } from "../node/FilePatternError.js";
 
 suite("Parse file patterns", () => {
     test("Returns explicit files as absolute paths", async () => {

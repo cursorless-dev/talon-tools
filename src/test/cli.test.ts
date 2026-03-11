@@ -5,7 +5,12 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
-import { formatFile, formatFiles, main, mainFormatStdin } from "../cli/cli.js";
+import { formatFile, formatFiles, main, mainFormatStdin } from "../node/cli.js";
+import { createLogger, createTestLogger } from "../node/createLogger.js";
+import { getDefaultArguments } from "../node/getDefaultArguments.js";
+import { normalizeToPosix } from "../node/normalizeToPosix.js";
+import { parseArgs } from "../node/parseArgs.js";
+import { printHelp } from "../node/printHelp.js";
 import type {
     CLI,
     EditorConfigOptions,
@@ -14,11 +19,6 @@ import type {
     ParsedArgs,
 } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
-import { createLogger, createTestLogger } from "../util/createLogger.js";
-import { getDefaultArguments } from "../util/getDefaultArguments.js";
-import { normalizeToPosix } from "../util/normalizeToPosix.js";
-import { parseArgs } from "../util/parseArgs.js";
-import { printHelp } from "../util/printHelp.js";
 
 suite("CLI", () => {
     test("Formats a file in place", async () => {

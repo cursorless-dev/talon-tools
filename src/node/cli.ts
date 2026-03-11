@@ -5,17 +5,17 @@ import * as process from "node:process";
 import type { Readable } from "node:stream";
 import type { CLI, Logger, ParsedArgs } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
-import { createLogger } from "../util/createLogger.js";
-import { FilePatternError } from "../util/FilePatternError.js";
+import { FilePatternError } from "./FilePatternError.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
-import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
-import { isMissingFileError } from "../util/isMissingFileError.js";
-import { normalizeToPosix } from "../util/normalizeToPosix.js";
-import { parseArgs } from "../util/parseArgs.js";
-import { parseFilePatterns } from "../util/parseFilePatterns.js";
-import { printHelp } from "../util/printHelp.js";
-import { printVersion } from "../util/printVersion.js";
-import { setExitCode } from "../util/setExitCode.js";
+import { isMissingFileError } from "./isMissingFileError.js";
+import { setExitCode } from "./setExitCode.js";
+import { createLogger } from "./createLogger.js";
+import { getOptionsFromConfig } from "./getOptionsFromConfig.js";
+import { normalizeToPosix } from "./normalizeToPosix.js";
+import { parseArgs } from "./parseArgs.js";
+import { parseFilePatterns } from "./parseFilePatterns.js";
+import { printHelp } from "./printHelp.js";
+import { printVersion } from "./printVersion.js";
 
 export async function main(cli: CLI): Promise<void> {
     let logger = createLogger();

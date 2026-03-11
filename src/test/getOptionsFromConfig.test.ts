@@ -4,8 +4,8 @@ import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { getOptionsFromConfig } from "../node/getOptionsFromConfig.js";
 import type { EditorConfigOptions } from "../types.js";
-import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
 
 suite("getOptionsFromConfig", () => {
     test("indent_style: space sets indentTabs: false", async () => {

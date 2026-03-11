@@ -1,5 +1,6 @@
 ﻿import eslintJs from "@eslint/js";
 import eslintPrettier from "eslint-config-prettier/flat";
+import importPlugin from "eslint-plugin-import";
 import { defineConfig } from "eslint/config";
 import eslintTs from "typescript-eslint";
 
@@ -7,6 +8,7 @@ export default defineConfig(
     eslintJs.configs.recommended,
     eslintTs.configs.recommendedTypeChecked,
     eslintPrettier,
+
     {
         languageOptions: {
             parser: eslintTs.parser,
@@ -15,6 +17,10 @@ export default defineConfig(
             parserOptions: {
                 projectService: true,
             },
+        },
+
+        plugins: {
+            import: importPlugin,
         },
 
         rules: {
@@ -39,6 +45,28 @@ export default defineConfig(
             ],
         },
     },
+
+    // Prevent node in exported library
+    {
+        files: ["src/**/*.ts"],
+        ignores: ["src/node/**/*.ts", "src/test/**/*.ts"],
+        rules: {
+            "import/no-nodejs-modules": "error",
+            "no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        {
+                            group: ["**/node/**"],
+                            message:
+                                "Only files in src/node may import from src/node.",
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+
     {
         files: ["eslint.config.ts"],
         extends: [eslintTs.configs.disableTypeChecked],

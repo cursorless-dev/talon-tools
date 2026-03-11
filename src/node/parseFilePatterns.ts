@@ -2,7 +2,7 @@ import type { Options } from "fast-glob";
 import fastGlob from "fast-glob";
 import * as path from "node:path";
 import type { CLI } from "../types.js";
-import { GLOB_IGNORE_PATTERNS } from "./constants.js";
+import { GLOB_IGNORE_PATTERNS } from "../util/constants.js";
 import { FilePatternError } from "./FilePatternError.js";
 import { lstatSafe } from "./lstatSafe.js";
 import { normalizeToPosix } from "./normalizeToPosix.js";

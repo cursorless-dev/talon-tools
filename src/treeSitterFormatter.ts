@@ -1,6 +1,6 @@
 import type { DebugLogger, FormatterOptions, SyntaxNode } from "./types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "./util/constants.js";
-import { createDebugLogger } from "./util/createLogger.js";
+import { createDebugLogger } from "./util/createDebugLogger.js";
 import { getEndOfLine } from "./util/getEndOfLine.js";
 import { getIndentation } from "./util/getIndentation.js";
 

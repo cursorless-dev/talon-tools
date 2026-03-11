@@ -1,5 +1,5 @@
 import * as process from "node:process";
-import type { DebugLogger, Logger, LoggerEntry, TestLogger } from "../types.js";
+import type { Logger, LoggerEntry, TestLogger } from "../types.js";
 
 type LogCallback = (message: string) => void;
 
@@ -43,16 +43,6 @@ export function createTestLogger(): TestLogger {
         },
         getEntries() {
             return entries;
-        },
-    };
-}
-
-export function createDebugLogger(debug: boolean): DebugLogger {
-    return {
-        debug(message: string) {
-            if (debug) {
-                process.stderr.write(`[debug] ${message}\n`);
-            }
         },
     };
 }

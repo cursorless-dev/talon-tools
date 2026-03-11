@@ -1,22 +1,33 @@
-import esbuild from "esbuild";
+import esbuild, { type BuildOptions } from "esbuild";
 
 export async function build() {
-    console.log("Running esbuild");
+    console.log("Running esbuild...");
 
-    await esbuild.build({
+    const options: BuildOptions = {
         bundle: true,
         format: "esm",
-        platform: "node",
-        outdir: "out",
+        outdir: "dist",
         minify: true,
         sourcemap: true,
         packages: "external",
+    };
 
+    await esbuild.build({
+        ...options,
+        platform: "neutral",
         entryPoints: {
             lib: "src/lib.ts",
-            snippetFormatter: "src/cli/snippetFormatter.ts",
-            talonFormatter: "src/cli/talonFormatter.ts",
-            treeSitterFormatter: "src/cli/treeSitterFormatter.ts",
+        },
+    });
+
+    await esbuild.build({
+        ...options,
+        platform: "node",
+        entryPoints: {
+            libNode: "src/node/libNode.ts",
+            snippetFormatter: "src/node/snippetFormatter.ts",
+            talonFormatter: "src/node/talonFormatter.ts",
+            treeSitterFormatter: "src/node/treeSitterFormatter.ts",
         },
     });
 }
