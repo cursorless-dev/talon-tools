@@ -3,6 +3,7 @@ import fastGlob from "fast-glob";
 import * as path from "node:path";
 import type { CLI } from "../types.js";
 import { GLOB_IGNORE_PATTERNS } from "./constants.js";
+import { FilePatternError } from "./FilePatternError.js";
 import { lstatSafe } from "./lstatSafe.js";
 import { normalizeToPosix } from "./normalizeToPosix.js";
 
@@ -12,6 +13,7 @@ export async function parseFilePatterns(
 ): Promise<string[]> {
     const seen: Set<string> = new Set();
     const globFileEndingPattern = getGlobFileEndingsPattern(cli.fileEndings);
+    const errorMessages: string[] = [];
 
     const globOptions: Options = {
         dot: true,
@@ -25,9 +27,10 @@ export async function parseFilePatterns(
 
         if (stat != null) {
             if (stat.isSymbolicLink()) {
-                throw new Error(
-                    `Specified pattern "${pattern}" is a symbolic link.`,
+                errorMessages.push(
+                    `Specified pattern is a symbolic link: ${pattern}`,
                 );
+                continue;
             }
 
             if (stat.isFile()) {
@@ -40,6 +43,11 @@ export async function parseFilePatterns(
                     ...globOptions,
                     cwd: absolutePath,
                 });
+                if (files.length === 0) {
+                    errorMessages.push(
+                        `No matching files were found in the directory: ${pattern}`,
+                    );
+                }
                 for (const file of files) {
                     seen.add(path.resolve(absolutePath, file));
                 }
@@ -49,9 +57,18 @@ export async function parseFilePatterns(
 
         const glob = normalizeToPosix(pattern);
         const files = await fastGlob(glob, globOptions);
+        if (files.length === 0) {
+            errorMessages.push(
+                `No files matching the pattern were found: ${pattern}`,
+            );
+        }
         for (const file of files) {
             seen.add(path.resolve(file));
         }
+    }
+
+    if (errorMessages.length > 0) {
+        throw new FilePatternError(errorMessages);
     }
 
     return Array.from(seen).sort((a, b) => a.localeCompare(b));

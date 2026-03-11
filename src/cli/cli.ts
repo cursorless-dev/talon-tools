@@ -6,12 +6,13 @@ import type { Readable } from "node:stream";
 import type { CLI, Logger, ParsedArgs } from "../types.js";
 import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
 import { createLogger } from "../util/createLogger.js";
+import { FilePatternError } from "../util/FilePatternError.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
 import { getOptionsFromConfig } from "../util/getOptionsFromConfig.js";
 import { isMissingFileError } from "../util/isMissingFileError.js";
+import { normalizeToPosix } from "../util/normalizeToPosix.js";
 import { parseArgs } from "../util/parseArgs.js";
 import { parseFilePatterns } from "../util/parseFilePatterns.js";
-import { normalizeToPosix } from "../util/normalizeToPosix.js";
 import { printHelp } from "../util/printHelp.js";
 import { printVersion } from "../util/printVersion.js";
 import { setExitCode } from "../util/setExitCode.js";
@@ -25,7 +26,13 @@ export async function main(cli: CLI): Promise<void> {
         const exitCode = await mainUnsafe({ cli, args, logger });
         setExitCode(exitCode);
     } catch (error) {
-        logger.error(getErrorMessage(error));
+        if (error instanceof FilePatternError) {
+            for (const message of error.messages) {
+                logger.error(message);
+            }
+        } else {
+            logger.error(getErrorMessage(error));
+        }
         setExitCode(EXIT_ERROR);
     }
 }
