@@ -6,7 +6,11 @@ import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
 import { formatFile, formatFiles, main, mainFormatStdin } from "../node/cli.js";
-import { createLogger, createTestLogger } from "../node/createLogger.js";
+import {
+    createLogger,
+    createLoggerFromStreams,
+    createTestLogger,
+} from "../node/createLogger.js";
 import { getDefaultArguments } from "../node/getDefaultArguments.js";
 import { normalizeToPosix } from "../node/normalizeToPosix.js";
 import { parseArgs } from "../node/parseArgs.js";
@@ -296,13 +300,35 @@ suite("CLI", () => {
 
     test("Reports stdin formatting issues to stderr in check mode", async () => {
         const cli = createCLI((text) => `${text} updated`);
-        const logger = createLogger();
-        const output = await captureStreamWrite(process.stderr, async () =>
-            readAndFormatStdin(cli, logger, "content", true),
-        );
+        const output = await withNoColor(async () => {
+            const logger = createLogger();
+            return captureStreamWrite(process.stderr, async () =>
+                readAndFormatStdin(cli, logger, "content", true),
+            );
+        });
 
         assert.equal(output.result, EXIT_FAIL);
         assert.equal(output.text, "[warn] Code style issues found in stdin.\n");
+    });
+
+    test("Logger colors warn and error prefixes for TTY streams", () => {
+        const stdout = createMockWriteStream(true);
+        const stderr = createMockWriteStream(true);
+        const logger = createLoggerFromStreams(stdout, stderr);
+
+        logger.log("info");
+        logger.warn("warn");
+        logger.error("error");
+
+        assert.equal(stdout.getText(), "info\n");
+        assert.equal(
+            stderr.getText(),
+            [
+                "\u001b[33m[warn]\u001b[0m warn",
+                "\u001b[31m[error]\u001b[0m error",
+                "",
+            ].join("\n"),
+        );
     });
 
     test("Captures check-mode file entries without writing when quiet", async () => {
@@ -352,9 +378,11 @@ suite("CLI", () => {
         try {
             process.argv = ["node", "talon-fmt", "--check", fileName];
 
-            const output = await captureStdoutAndStderr(async () => {
-                await main(cli);
-                return process.exitCode;
+            const output = await withNoColor(async () => {
+                return captureStdoutAndStderr(async () => {
+                    await main(cli);
+                    return process.exitCode;
+                });
             });
 
             assert.equal(output.result, EXIT_FAIL);
@@ -601,9 +629,11 @@ suite("CLI", () => {
         try {
             process.argv = ["node", "talon-fmt", "--version"];
 
-            const output = await captureStdoutAndStderr(async () => {
-                await main(cli);
-                return process.exitCode;
+            const output = await withNoColor(async () => {
+                return captureStdoutAndStderr(async () => {
+                    await main(cli);
+                    return process.exitCode;
+                });
             });
 
             assert.equal(output.result, EXIT_OK);
@@ -626,9 +656,11 @@ suite("CLI", () => {
             process.chdir(directory);
             process.argv = ["node", "talon-fmt", "**/*.txt"];
 
-            const output = await captureStdoutAndStderr(async () => {
-                await main(cli);
-                return process.exitCode;
+            const output = await withNoColor(async () => {
+                return captureStdoutAndStderr(async () => {
+                    await main(cli);
+                    return process.exitCode;
+                });
             });
 
             assert.equal(output.result, EXIT_ERROR);
@@ -798,6 +830,36 @@ async function captureStdoutAndStderr<T>(
         process.stdout.write = originalStdoutWrite;
         process.stderr.write = originalStderrWrite;
     }
+}
+
+async function withNoColor<T>(callback: () => Promise<T>): Promise<T> {
+    const originalNoColor = process.env.NO_COLOR;
+    process.env.NO_COLOR = "1";
+
+    try {
+        return await callback();
+    } finally {
+        if (originalNoColor == null) {
+            delete process.env.NO_COLOR;
+        } else {
+            process.env.NO_COLOR = originalNoColor;
+        }
+    }
+}
+
+function createMockWriteStream(isTTY: boolean) {
+    let text = "";
+
+    return {
+        isTTY,
+        write(chunk: string | Uint8Array) {
+            text += chunk.toString();
+            return true;
+        },
+        getText() {
+            return text;
+        },
+    };
 }
 
 function getArguments(args: Partial<ParsedArgs>) {
