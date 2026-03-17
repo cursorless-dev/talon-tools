@@ -74,7 +74,7 @@ foo bar baz:   "foo bar baz"
 ```yaml
 repos:
   - repo: https://github.com/cursorless-dev/talon-tools
-    rev: v0.7.0
+    rev: v0.8.0
     hooks:
       - id: talon-fmt
       - id: snippet-fmt
@@ -91,10 +91,28 @@ repos:
 
 ```sh
 # Try formatter without pre-commit
-node out/treeSitterFormatter.js test.scm
+node out/talonFormatter.js test.talon
 
 # Try formatter with pre-commit
-pre-commit try-repo . tree-sitter-fmt --files test.scm -v
+pre-commit try-repo . talon-fmt --files test.talon -v
+```
+
+Install the hooks locally:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: .
+    rev: HEAD
+    hooks:
+      - id: talon-fmt
+      - id: snippet-fmt
+      - id: tree-sitter-fmt
+```
+
+```sh
+pre-commit install
+pre-commit run --all-files
 ```
 
 ## Release
@@ -104,5 +122,5 @@ When creating a new release do the following:
 - Update version in [`package.json`](./package.json)
 - Update version in [`README.md`](./README.md#pre-commit)
 - Run build: `npm run build`
-- Add new tag eg `v1.2.0`
+- Add new tag eg `git tag v1.2.0`
 - Publish lib: `npm publish --access public`
