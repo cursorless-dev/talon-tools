@@ -2,7 +2,33 @@
 
 Linting and formatting tools for Talon and Cursorless.
 
-## Command line
+## Installation
+
+### Local dev dependency
+
+Install the package in your project:
+
+```sh
+npm install --save-dev @cursorless/talon-tools
+```
+
+Run the local CLI commands with `npx`:
+
+```sh
+npx talon-fmt [options] [file/dir/glob ...]
+npx snippet-fmt [options] [file/dir/glob ...]
+npx tree-sitter-fmt [options] [file/dir/glob ...]
+```
+
+### Global install
+
+Install the binaries globally:
+
+```sh
+npm install --global @cursorless/talon-tools
+```
+
+Run the binaries directly:
 
 ```sh
 talon-fmt [options] [file/dir/glob ...]
@@ -10,7 +36,7 @@ snippet-fmt [options] [file/dir/glob ...]
 tree-sitter-fmt [options] [file/dir/glob ...]
 ```
 
-### CLI options
+## CLI options
 
 All binaries support these options:
 
@@ -91,7 +117,7 @@ repos:
 
 ```sh
 # Try formatter without pre-commit
-node out/talonFormatter.js test.talon
+node dist/talonFormatter.js test.talon
 
 # Try formatter with pre-commit
 pre-commit try-repo . talon-fmt --files test.talon -v
