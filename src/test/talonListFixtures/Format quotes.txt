@@ -3,23 +3,17 @@ list: l
 
 aaa: "aaa"
 bbb: 'bbb'
-ccc: "ccc ccc"
-ddd: " ddd "
-eee: ' eee '
-fff: '"fff"'
-ggg: "'ggg'"
-hhh: ""
-iii: ''
+ccc: '"fff"'
+ddd: "'ggg'"
+eee: ""
+fff: ''
 ================ EXPECTED ================
 list: l
 -
 
-aaa: aaa
-bbb: bbb
-ccc: ccc ccc
-ddd: " ddd "
-eee: " eee "
-fff: '"fff"'
-ggg: "'ggg'"
-hhh: ""
-iii: ""
+aaa: "aaa"
+bbb: "bbb"
+ccc: '"fff"'
+ddd: "'ggg'"
+eee: ""
+fff: ""

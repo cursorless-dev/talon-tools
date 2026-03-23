@@ -45,7 +45,7 @@ export function talonListFormatter(
                 columnWidth != null
                     ? `${item.key}: `.padEnd(columnWidth)
                     : `${item.key}: `;
-            const value = formatValue(item.value);
+            const value = convertQuotes(item.value);
             result.push(`${keyWithColon}${value}`);
         } else {
             result.push(item.key);
@@ -61,29 +61,4 @@ export function talonListFormatter(
     }
 
     return result.join(eol);
-}
-
-function formatValue(value: string): string {
-    if (value.length >= 2) {
-        const first = value[0];
-
-        if (
-            (first === '"' || first === "'") &&
-            value[value.length - 1] === first
-        ) {
-            const innerValue = value.slice(1, -1).trim();
-
-            if (
-                innerValue.length > 0 &&
-                innerValue.length + 2 === value.length &&
-                !innerValue.includes(first === '"' ? "'" : '"')
-            ) {
-                return innerValue;
-            }
-
-            return convertQuotes(value);
-        }
-    }
-
-    return value;
 }

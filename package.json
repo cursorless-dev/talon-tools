@@ -1,6 +1,6 @@
 {
     "name": "@cursorless/talon-tools",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Cursorless Dev",
     "license": "MIT",
@@ -65,7 +65,7 @@
         "mocha": "^11.7.5",
         "prettier": "^3.8.1",
         "tsx": "^4.21.0",
-        "typescript-eslint": "^8.57.0",
+        "typescript-eslint": "^8.57.1",
         "typescript": "^5.9.3"
     }
 }
