@@ -1,0 +1,7 @@
+hello:
+  insert("world")
+  key(enter)
+================ EXPECTED ================
+hello:
+    insert("world")
+    key(enter)

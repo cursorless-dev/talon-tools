@@ -1,0 +1,8 @@
+mode: command
+-
+hello: "world"
+================ EXPECTED ================
+mode: command
+-
+
+hello: "world"

@@ -2,26 +2,18 @@ import fastGlob from "fast-glob";
 import Mocha from "mocha";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-
-const grep = `
-// .editorconfig
-`
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !line.startsWith("//"))
-    .join("|");
+import { getGrep } from "./testUtils.js";
 
 const mocha = new Mocha({
     ui: "tdd",
     color: true,
-    grep: grep || undefined,
+    grep: getGrep(),
 });
 
 const cwd = path.dirname(fileURLToPath(import.meta.url));
+const files = fastGlob.sync("**/**.test.ts", { cwd, absolute: true }).sort();
 
-const files = fastGlob.sync("**/**.test.ts", { cwd }).sort();
-
-files.forEach((f) => mocha.addFile(path.resolve(cwd, f)));
+files.forEach((f) => mocha.addFile(f));
 
 mocha.run((failures) => {
     if (failures > 0) {

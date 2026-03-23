@@ -29,6 +29,7 @@ class SnippetSerializer {
     ) {}
 
     getText(snippetFile: SnippetFile): string {
+        const docDelimiter = "---";
         const documents: string[] = [];
 
         if (snippetFile.header != null) {
@@ -39,24 +40,23 @@ class SnippetSerializer {
             ...snippetFile.snippets.map(this.getDocumentText.bind(this)),
         );
 
-        // Remove empty documents
         const result = documents
-            .filter(Boolean)
-            .join(`${this.eol}---${this.eol}${this.eol}`);
+            .filter((d) => d.length > 0)
+            .join(`${this.eol}${docDelimiter}${this.eol}${this.eol}`);
 
         if (result.length === 0) {
             return "";
         }
 
         if (this.insertFinalNewline) {
-            return result + `${this.eol}---${this.eol}`;
+            return result + `${this.eol}${docDelimiter}${this.eol}`;
         }
 
-        return result + `${this.eol}---`;
+        return result + `${this.eol}${docDelimiter}`;
     }
 
     private getDocumentText(document: SnippetHeader | Snippet): string {
-        const parts: string[] = [
+        const lines: string[] = [
             getOptionalPairString("name", document.name),
             getOptionalPairString("description", document.description),
             getOptionalPairString("language", document.languages),
@@ -65,22 +65,22 @@ class SnippetSerializer {
         ].filter(Boolean);
 
         if (document.variables.length > 0) {
-            if (parts.length > 0) {
-                parts.push("");
+            if (lines.length > 0) {
+                lines.push("");
             }
-            parts.push(...getSortedVariables(document.variables));
+            lines.push(...getSortedVariables(document.variables));
         }
 
         if ("body" in document) {
-            parts.push("-", ...document.body);
+            lines.push("-", ...document.body);
         }
 
-        return parts.join(this.eol);
+        return lines.join(this.eol);
     }
 }
 
 function getSortedVariables(variables: SnippetVariable[]): string[] {
-    const result = [...variables];
+    const result = variables.slice();
     result.sort(compareVariables);
     return result
         .flatMap((variable) => [
@@ -97,7 +97,7 @@ function getSortedVariables(variables: SnippetVariable[]): string[] {
                 variable.wrapperScope,
             ),
         ])
-        .filter(Boolean);
+        .filter((v) => v.length > 0);
 }
 
 function getOptionalPairString(

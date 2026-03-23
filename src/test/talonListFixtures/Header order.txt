@@ -1,0 +1,10 @@
+app: vscode
+list: l
+-
+a:b
+================ EXPECTED ================
+list: l
+app: vscode
+-
+
+a: b

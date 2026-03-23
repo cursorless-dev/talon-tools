@@ -1,0 +1,13 @@
+tag()  :  user.some_tag
+key( enter )  :  "key"
+gamepad( north )  :  "gamepad"
+parrot( pop )  :  "parrot"
+noise( pop )  :  "noise"
+face( smile )  :  "face"
+================ EXPECTED ================
+tag(): user.some_tag
+key(enter): "key"
+gamepad(north): "gamepad"
+parrot(pop): "parrot"
+noise(pop): "noise"
+face(smile): "face"

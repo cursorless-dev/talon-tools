@@ -1,0 +1,10 @@
+list: l
+-
+# fmt: columnWidth=5
+a:b
+================ EXPECTED ================
+list: l
+-
+
+# fmt: columnWidth=5
+a:   b

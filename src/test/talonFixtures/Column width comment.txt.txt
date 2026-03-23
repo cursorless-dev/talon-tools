@@ -1,0 +1,5 @@
+# fmt: columnWidth=10
+foo: "bar"
+================ EXPECTED ================
+# fmt: columnWidth=10
+foo:      "bar"

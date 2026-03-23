@@ -1,0 +1,16 @@
+
+name: foo
+-
+  
+  foo  
+  
+ bar 
+baz 
+================ EXPECTED ================
+name: foo
+-
+  foo
+
+ bar
+baz
+---

@@ -2,6 +2,7 @@ import type { FormatterOptions } from "../types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "../util/constants.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
+import { convertQuotes } from "./convertQuotes.js";
 import { parseTalonList } from "./parseTalonList.js";
 
 type Options = FormatterOptions<
@@ -18,25 +19,25 @@ export function talonListFormatter(
     talonList.headers.sort((a, _b) =>
         a.type === "header" && a.key === "list" ? -1 : 0,
     );
-    const result: string[] = [];
+    const lines: string[] = [];
 
     for (const header of talonList.headers) {
         if (header.type === "comment") {
-            result.push(header.text);
+            lines.push(header.text);
             continue;
         }
-        result.push(`${header.key}: ${header.value}`);
+        lines.push(`${header.key}: ${header.value}`);
     }
 
-    result.push("-", "");
+    lines.push("-", "");
 
     for (const item of talonList.items) {
         if (item.type === "empty") {
-            result.push("");
+            lines.push("");
             continue;
         }
         if (item.type === "comment") {
-            result.push(item.text);
+            lines.push(item.text);
             continue;
         }
         if (item.value != null) {
@@ -44,19 +45,20 @@ export function talonListFormatter(
                 columnWidth != null
                     ? `${item.key}: `.padEnd(columnWidth)
                     : `${item.key}: `;
-            result.push(`${keyWithColon}${item.value}`);
+            const value = convertQuotes(item.value);
+            lines.push(`${keyWithColon}${value}`);
         } else {
-            result.push(item.key);
+            lines.push(item.key);
         }
     }
 
-    if (result.length === 0) {
+    if (lines.length === 0) {
         return "";
     }
 
     if (options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE) {
-        result.push("");
+        lines.push("");
     }
 
-    return result.join(eol);
+    return lines.join(eol);
 }

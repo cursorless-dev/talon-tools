@@ -1,69 +1,20 @@
 import * as assert from "node:assert";
 import { talonListFormatter } from "../talon/talonListFormatter.js";
-
-const fixtures: {
-    title: string;
-    pre: string;
-    post: string;
-}[] = [
-    {
-        title: "large",
-        pre: `
-list :user.my_list
-
--
-    air   :a
-
-bat: b`,
-        post: `list: user.my_list
--
-
-air:      a
-
-bat:      b
-`,
-    },
-
-    {
-        title: "Multiple headers",
-        pre: "app: app\nlist: l\n-\na:b",
-        post: "list: l\napp: app\n-\n\na:        b\n",
-    },
-
-    {
-        title: "To much whitespace",
-        pre: "\n\nlist: l\n\n\n-\n\n\na:b\n\n",
-        post: "list: l\n-\n\na:        b\n",
-    },
-
-    {
-        title: "Comment",
-        pre: "\n\nlist: l\n-\n#c:c\na:b",
-        post: "list: l\n-\n\n#c:c\na:        b\n",
-    },
-
-    {
-        title: "CRLF input",
-        pre: "list: l\r\n-\r\na:b",
-        post: "list: l\n-\n\na:        b\n",
-    },
-
-    {
-        title: "fmt column width comment",
-        pre: "list: l\n-\n# fmt: columnWidth=5\na:b",
-        post: "list: l\n-\n\n# fmt: columnWidth=5\na:   b\n",
-    },
-];
+import { getFixture, getFixtures } from "./testUtils.js";
 
 suite("Talon list formatter", () => {
-    for (const fixture of fixtures) {
+    for (const fixture of getFixtures("talonListFixtures")) {
         test(fixture.title, () => {
-            const actual = talonListFormatter(fixture.pre, {
-                columnWidth: 10,
-            });
-            assert.equal(actual, fixture.post);
+            const { input, expected } = getFixture(fixture.file);
+            const actual = talonListFormatter(input);
+            assert.equal(actual, expected);
         });
     }
+
+    test("CRLF input", () => {
+        const actual = talonListFormatter("list: l\r\n-\r\na:b");
+        assert.equal(actual, "list: l\n-\n\na: b\n");
+    });
 
     test("endOfLine: CRLF", () => {
         const actual = talonListFormatter("list: l\n-\na:b", {

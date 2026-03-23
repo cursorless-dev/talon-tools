@@ -1,0 +1,22 @@
+# Before
+settings():
+    speech.timeout = 0.400
+# After
+
+before: "before"
+settings():
+  speech.timeout = 0.400
+after: "after"
+================ EXPECTED ================
+# Before
+settings():
+    speech.timeout = 0.400
+
+# After
+
+before: "before"
+
+settings():
+    speech.timeout = 0.400
+
+after: "after"

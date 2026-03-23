@@ -7,8 +7,9 @@ import { createDebugLogger } from "../util/createDebugLogger.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
+import { convertQuotes } from "./convertQuotes.js";
 
-type Options = FormatterOptions<
+export type Options = FormatterOptions<
     | "endOfLine"
     | "indentTabs"
     | "indentSize"
@@ -39,6 +40,7 @@ export function talonFormatter(
 }
 
 class TalonFormatter {
+    private lines: string[] = [];
     private lastRow = 0;
     private logger: DebugLogger;
 
@@ -55,110 +57,66 @@ class TalonFormatter {
     }
 
     getText(node: SyntaxNode): string {
-        const nodeText = this.getNodeText(node);
+        this.addNode(node);
 
-        if (nodeText.length === 0) {
+        const result = this.lines.join(this.eol).trimEnd();
+
+        if (result.length === 0) {
             return "";
         }
 
         if (this.insertFinalNewline) {
-            return nodeText + this.eol;
+            return result + this.eol;
         }
 
-        return nodeText;
+        return result;
     }
 
-    private getLeftRightText(
-        node: SyntaxNode,
-        forceMultiline: boolean,
-    ): string {
-        const [leftNode, _colonNode, ...rightNodes] = node.children;
-        const left = this.getNodeText(leftNode);
-
-        if (!forceMultiline && rightNodes.length === 1) {
-            if (
-                !this.preserveMultiline ||
-                isLeftRightSingleLine(leftNode, rightNodes)
-            ) {
-                const lastRow = this.lastRow;
-                const right = this.getNodeText(rightNodes[0]);
-                if (!right.includes(this.eol)) {
-                    const leftWithPadding =
-                        this.columnWidth != null
-                            ? `${left}: `.padEnd(this.columnWidth)
-                            : `${left}: `;
-                    if (
-                        leftWithPadding.length + right.length <=
-                        this.maxLineLength
-                    ) {
-                        return leftWithPadding + right;
-                    }
-                }
-                this.lastRow = lastRow;
-            }
+    private addNL(): void {
+        if (this.lines[this.lines.length - 1] !== "") {
+            this.lines.push("");
         }
-
-        const right = rightNodes
-            .map((n) => this.getNodeText(n, true))
-            .join(this.eol);
-        return `${left}:${this.eol}${right}`;
     }
 
-    private getNodeText(node: SyntaxNode, isIndented = false): string {
-        const nl = node.startPosition.row > this.lastRow + 1 ? this.eol : "";
+    private addNode(node: SyntaxNode, isIndented = false): void {
+        if (node.startPosition.row > this.lastRow + 1) {
+            this.addNL();
+        }
         this.lastRow = node.endPosition.row;
-        const text = this.getNodeTextInternal(node, isIndented);
+        this.addNodeHelper(node, isIndented);
         this.lastRow = node.endPosition.row;
-        return `${nl}${text}`;
     }
 
-    private pairWithChildren(
-        node: SyntaxNode,
-        unwrap: boolean = false,
-    ): string {
-        const { children } = node;
-        const middle = children
-            .slice(1, -1)
-            .map((n) => this.getNodeText(n))
-            .join(" ");
-        if (unwrap) {
-            return middle;
-        }
-        const pre = children[0].text;
-        const post = children[children.length - 1].text;
-        return `${pre}${middle}${post}`;
-    }
-
-    private getNodeTextInternal(node: SyntaxNode, isIndented = false): string {
+    private addNodeHelper(node: SyntaxNode, isIndented = false): void {
         switch (node.type) {
             case "source_file":
-                return node.children
-                    .map((n) => this.getNodeText(n))
-                    .filter(Boolean)
-                    .join(this.eol);
+                for (const n of node.children) {
+                    this.addNode(n);
+                }
+                break;
 
             case "matches": {
-                // There are no match nodes and there is no comment before
-                if (node.children.length < 2 && isFirstChild(node)) {
-                    return "";
+                // There are  match nodes or there is a comment before
+                if (node.children.length > 1 || !isFirstChild(node)) {
+                    for (const n of node.children) {
+                        this.addNode(n);
+                    }
+                    this.addNL();
                 }
-                return node.children
-                    .map((n) => this.getNodeText(n))
-                    .join(this.eol);
+                break;
             }
 
             case "declarations":
-                return node.children
-                    .map((n) => this.getNodeText(n))
-                    .join(this.eol);
-
-            case "match":
-                return node.children.map((n) => this.getNodeText(n)).join("");
+                for (const n of node.children) {
+                    this.addNode(n);
+                }
+                break;
 
             case "block":
-                return node.children
-                    .map((n) => this.getNodeText(n, isIndented))
-                    .join(this.eol);
+                for (const n of node.children) {
+                    this.addNode(n, true);
+                }
+                break;
 
             case "command_declaration":
             case "key_binding_declaration":
@@ -167,26 +125,73 @@ class TalonFormatter {
             case "face_declaration":
             case "gamepad_declaration":
             case "deck_declaration":
-                return this.getLeftRightText(node, false);
+                this.addLeftRightNode(node, false);
+                break;
 
             case "settings_declaration":
-                return this.getLeftRightText(node, true);
+                if (
+                    this.lines.length > 0 &&
+                    !this.lines[this.lines.length - 1].startsWith("#")
+                ) {
+                    this.addNL();
+                }
+                this.addLeftRightNode(node, true);
+                this.addNL();
+                break;
 
             case "comment": {
                 // When using crlf eol comments have a trailing `\r`
                 const text = node.text.trimEnd();
-                return isIndented || node.startPosition.column > 0
-                    ? `${this.indent}${text}`
-                    : text;
+                const nodeText =
+                    isIndented || node.startPosition.column > 0
+                        ? `${this.indent}${text}`
+                        : text;
+                this.lines.push(nodeText);
+                break;
             }
 
-            case "expression_statement":
-            case "assignment_statement": {
-                const text = node.children
-                    .map((n) => this.getNodeText(n))
-                    .join(" ");
-                return isIndented ? `${this.indent}${text}` : text;
+            default: {
+                const nodeText = this.getNodeText(node);
+                this.lines.push(
+                    isIndented ? `${this.indent}${nodeText}` : nodeText,
+                );
             }
+        }
+    }
+
+    private getNodeText(node: SyntaxNode): string {
+        switch (node.type) {
+            case "source_file":
+            case "matches":
+            case "declarations":
+            case "block":
+            case "command_declaration":
+            case "key_binding_declaration":
+            case "parrot_declaration":
+            case "noise_declaration":
+            case "face_declaration":
+            case "gamepad_declaration":
+            case "deck_declaration":
+            case "settings_declaration":
+            case "comment":
+                throw new Error(
+                    `Node type '${node.type}' should be handled in addNode, not getNodeText`,
+                );
+
+            case "parenthesized_rule":
+                return this.pairWithChildren(
+                    node,
+                    node.parent != null && rangeEqual(node, node.parent),
+                );
+
+            case "optional":
+                return this.pairWithChildren(node);
+
+            case "expression_statement":
+            case "assignment_statement":
+            case "seq":
+            case "choice":
+                return node.children.map((n) => this.getNodeText(n)).join(" ");
 
             case "rule":
             case "action":
@@ -200,7 +205,11 @@ class TalonFormatter {
             case "noise_binding":
             case "deck_binding":
             case "tag_import_declaration":
+            case "match":
                 return node.children.map((n) => this.getNodeText(n)).join("");
+
+            case "string":
+                return formatString(node);
 
             case "match_modifier":
             case ":":
@@ -209,22 +218,6 @@ class TalonFormatter {
 
             case "implicit_string":
                 return node.text.trim();
-
-            case "parenthesized_rule":
-                return this.pairWithChildren(
-                    node,
-                    node.parent != null && rangeEqual(node, node.parent),
-                );
-
-            case "optional":
-                return this.pairWithChildren(node);
-
-            case "seq":
-            case "choice":
-                return node.children.map((n) => this.getNodeText(n)).join(" ");
-
-            case "string":
-                return formatString(node);
 
             case "tag_binding":
             case "settings_binding":
@@ -259,6 +252,57 @@ class TalonFormatter {
                 return node.text;
         }
     }
+
+    private pairWithChildren(
+        node: SyntaxNode,
+        unwrap: boolean = false,
+    ): string {
+        const { children } = node;
+        const middle = children
+            .slice(1, -1)
+            .map((n) => this.getNodeText(n))
+            .join(" ");
+        if (unwrap) {
+            return middle;
+        }
+        const pre = children[0].text;
+        const post = children[children.length - 1].text;
+        return `${pre}${middle}${post}`;
+    }
+
+    private addLeftRightNode(node: SyntaxNode, forceMultiline: boolean): void {
+        const [leftNode, _colonNode, ...rightNodes] = node.children;
+        const left = this.getNodeText(leftNode);
+
+        if (!forceMultiline && rightNodes.length === 1) {
+            if (
+                !this.preserveMultiline ||
+                isLeftRightSingleLine(leftNode, rightNodes)
+            ) {
+                const rightNode = rightNodes[0];
+                if (rightNode.children.length === 1) {
+                    const right = this.getNodeText(rightNode.children[0]);
+                    const leftWithPadding =
+                        this.columnWidth != null
+                            ? `${left}: `.padEnd(this.columnWidth)
+                            : `${left}: `;
+                    if (
+                        leftWithPadding.length + right.length <=
+                        this.maxLineLength
+                    ) {
+                        this.lines.push(leftWithPadding + right);
+                        return;
+                    }
+                }
+            }
+        }
+
+        this.lines.push(`${left}:`);
+
+        for (const n of rightNodes) {
+            this.addNode(n, true);
+        }
+    }
 }
 
 function isLeftRightSingleLine(
@@ -282,6 +326,9 @@ function isFirstChild(node: SyntaxNode): boolean {
 }
 
 function formatString(node: SyntaxNode): string {
+    // Convert single quotes to double quotes
+    const text = convertQuotes(node.text);
+
     // A single string literal is allowed as syntactic sugar for the insert
     // action, but not in combination with other sibling statements.
     if (
@@ -290,8 +337,8 @@ function formatString(node: SyntaxNode): string {
         rangeEqual(node, node.parent) &&
         node.parent.parent.children.length > 1
     ) {
-        return `insert(${node.text})`;
+        return `insert(${text})`;
     }
 
-    return node.text;
+    return text;
 }

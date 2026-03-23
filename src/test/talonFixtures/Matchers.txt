@@ -1,0 +1,10 @@
+app  :  vscode
+
+and  not  mode :  command
+-
+
+================ EXPECTED ================
+app: vscode
+
+and not mode: command
+-

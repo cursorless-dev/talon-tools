@@ -1,0 +1,14 @@
+
+list :user.my_list
+
+-
+    air   :a
+
+bat: b
+================ EXPECTED ================
+list: user.my_list
+-
+
+air: a
+
+bat: b

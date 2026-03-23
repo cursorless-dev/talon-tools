@@ -1,6 +1,6 @@
 {
     "name": "@cursorless/talon-tools",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Cursorless Dev",
     "license": "MIT",
@@ -43,7 +43,8 @@
         "fix": "npm run fix:ts && npm run fix:fmt",
         "fix:ts": "eslint src --fix",
         "fix:fmt": "prettier --write --list-different .",
-        "test": "tsx src/test/runAllTests.ts"
+        "test": "tsx src/test/runAllTests.ts",
+        "test:subset": "tsx src/test/runAllTests.ts --subset"
     },
     "dependencies": {
         "@cursorless/tree-sitter-wasms": "^0.7.0",
@@ -64,7 +65,7 @@
         "mocha": "^11.7.5",
         "prettier": "^3.8.1",
         "tsx": "^4.21.0",
-        "typescript-eslint": "^8.57.0",
+        "typescript-eslint": "^8.57.1",
         "typescript": "^5.9.3"
     }
 }
