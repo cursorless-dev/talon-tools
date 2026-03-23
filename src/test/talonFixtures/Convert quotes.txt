@@ -2,8 +2,10 @@ aaa: 'aaa'
 bbb: '"bbb"'
 ccc: insert('ccc')
 ddd: insert('"ddd"')
+eee: 'it\'s me'
 ================ EXPECTED ================
 aaa: "aaa"
 bbb: '"bbb"'
 ccc: insert("ccc")
 ddd: insert('"ddd"')
+eee: "it's me"

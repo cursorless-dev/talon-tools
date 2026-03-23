@@ -59,15 +59,17 @@ class TalonFormatter {
     getText(node: SyntaxNode): string {
         this.addNode(node);
 
-        if (this.lines.length === 0) {
+        const result = this.lines.join(this.eol).trimEnd();
+
+        if (result.length === 0) {
             return "";
         }
 
         if (this.insertFinalNewline) {
-            this.addNL();
+            return result + this.eol;
         }
 
-        return this.lines.join(this.eol);
+        return result;
     }
 
     private addNL(): void {

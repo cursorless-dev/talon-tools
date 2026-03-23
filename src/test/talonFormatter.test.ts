@@ -48,10 +48,14 @@ suite("Talon formatter", () => {
     });
 
     test("insertFinalNewline: false", async () => {
-        const actual = await talonFormatter("foo:\n  edit.left()", {
+        let actual = await talonFormatter("foo:\n  edit.left()", {
             insertFinalNewline: false,
         });
         assert.equal(actual, "foo: edit.left()");
+        actual = await talonFormatter("settings():\n  key = value", {
+            insertFinalNewline: false,
+        });
+        assert.equal(actual, "settings():\n    key = value");
     });
 
     test("maxLineLength: 7", async () => {

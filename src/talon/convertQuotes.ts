@@ -6,7 +6,8 @@ export function convertQuotes(text: string): string {
         text[text.length - 1] === "'" &&
         !text.includes('"')
     ) {
-        return `"${text.slice(1, -1)}"`;
+        const innerText = text.slice(1, -1).replaceAll("\\'", "'");
+        return `"${innerText}"`;
     }
 
     return text;
