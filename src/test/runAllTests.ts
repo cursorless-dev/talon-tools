@@ -1,23 +1,31 @@
 import fastGlob from "fast-glob";
 import Mocha from "mocha";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const grep = `
-// .editorconfig
-`
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !line.startsWith("//"))
-    .join("|");
+const cwd = path.dirname(fileURLToPath(import.meta.url));
+
+function getGrep(): string | undefined {
+    const args = process.argv.slice(2);
+    if (!args.includes("--subset")) {
+        return undefined;
+    }
+    const subsetFile = path.join(cwd, "testSubsetGrep.properties");
+    const content = fs.readFileSync(subsetFile, "utf-8");
+    const pattern = content
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith("//"))
+        .join("|");
+    return pattern || undefined;
+}
 
 const mocha = new Mocha({
     ui: "tdd",
     color: true,
-    grep: grep || undefined,
+    grep: getGrep(),
 });
-
-const cwd = path.dirname(fileURLToPath(import.meta.url));
 
 const files = fastGlob.sync("**/**.test.ts", { cwd }).sort();
 

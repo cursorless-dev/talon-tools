@@ -1,6 +1,9 @@
-node_modules
-playground
-out/test
-out/**/*.js.map
-out/build.*
-.npm-cache
+/node_modules/
+/playground/
+/.npm-cache/
+
+/out/test/
+/out/**/*.js.map
+/out/build.*
+
+/src/test/testSubsetGrep.properties

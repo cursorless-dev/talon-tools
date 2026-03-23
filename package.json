@@ -43,7 +43,8 @@
         "fix": "npm run fix:ts && npm run fix:fmt",
         "fix:ts": "eslint src --fix",
         "fix:fmt": "prettier --write --list-different .",
-        "test": "tsx src/test/runAllTests.ts"
+        "test": "tsx src/test/runAllTests.ts",
+        "test:subset": "tsx src/test/runAllTests.ts --subset"
     },
     "dependencies": {
         "@cursorless/tree-sitter-wasms": "^0.7.0",

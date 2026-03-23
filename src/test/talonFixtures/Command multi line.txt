@@ -1,0 +1,13 @@
+foo  : 
+  # actions
+  edit.left(  )
+  key(  enter  )
+  sleep(   200ms  )
+  user.too_stuff(  5  ,  7  ,  true  ,  false  )
+================ EXPECTED ================
+foo:
+    # actions
+    edit.left()
+    key(enter)
+    sleep(200ms)
+    user.too_stuff(5, 7, true, false)

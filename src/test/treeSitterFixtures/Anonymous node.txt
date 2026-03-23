@@ -1,0 +1,3 @@
+";" ?  @namedFunction.end  @functionName.domain.end
+================ EXPECTED ================
+";"? @namedFunction.end @functionName.domain.end

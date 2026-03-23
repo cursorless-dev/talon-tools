@@ -1,0 +1,9 @@
+settings()  :  
+  speech.timeout  =  0.400
+
+  speech.record_all=true
+================ EXPECTED ================
+settings():
+    speech.timeout = 0.400
+
+    speech.record_all = true

@@ -1,0 +1,5 @@
+# settings():
+ # insert_wait = 10
+================ EXPECTED ================
+# settings():
+    # insert_wait = 10
