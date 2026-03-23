@@ -7,6 +7,7 @@ import { createDebugLogger } from "../util/createDebugLogger.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
+import { convertQuotes } from "./convertQuotes.js";
 
 export type Options = FormatterOptions<
     | "endOfLine"
@@ -98,6 +99,7 @@ class TalonFormatter {
                     for (const n of node.children) {
                         this.addNode(n);
                     }
+                    this.addNL();
                 }
                 break;
             }
@@ -125,7 +127,10 @@ class TalonFormatter {
                 break;
 
             case "settings_declaration":
-                if (this.lines.length > 0) {
+                if (
+                    this.lines.length > 0 &&
+                    !this.lines[this.lines.length - 1].startsWith("#")
+                ) {
                     this.addNL();
                 }
                 this.addLeftRightNode(node, true);
@@ -319,6 +324,9 @@ function isFirstChild(node: SyntaxNode): boolean {
 }
 
 function formatString(node: SyntaxNode): string {
+    // Convert single quotes to double quotes
+    const text = convertQuotes(node.text);
+
     // A single string literal is allowed as syntactic sugar for the insert
     // action, but not in combination with other sibling statements.
     if (
@@ -327,8 +335,8 @@ function formatString(node: SyntaxNode): string {
         rangeEqual(node, node.parent) &&
         node.parent.parent.children.length > 1
     ) {
-        return `insert(${node.text})`;
+        return `insert(${text})`;
     }
 
-    return node.text;
+    return text;
 }

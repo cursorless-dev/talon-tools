@@ -1,8 +1,8 @@
-# Hello world
+mode: command
 -
 hello: "world"
 ================ EXPECTED ================
-# Hello world
+mode: command
 -
 
 hello: "world"

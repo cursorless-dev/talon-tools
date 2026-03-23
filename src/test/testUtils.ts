@@ -2,6 +2,10 @@ import fastGlob from "fast-glob";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { SyntaxNode } from "../types.js";
+import { fileURLToPath } from "node:url";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function createNode(type: string, text: string): SyntaxNode {
     return {
@@ -68,4 +72,19 @@ export function getFixture(fixturePath: string): {
     }
 
     return { input, expected };
+}
+
+export function getGrep(): string | undefined {
+    const args = process.argv.slice(2);
+    if (!args.includes("--subset")) {
+        return undefined;
+    }
+    const subsetFile = path.join(__dirname, "testSubsetGrep.properties");
+    const content = fs.readFileSync(subsetFile, "utf-8");
+    const pattern = content
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith("//"))
+        .join("|");
+    return pattern || undefined;
 }

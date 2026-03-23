@@ -1,0 +1,9 @@
+aaa: 'aaa'
+bbb: '"bbb"'
+ccc: insert('ccc')
+ddd: insert('"ddd"')
+================ EXPECTED ================
+aaa: "aaa"
+bbb: '"bbb"'
+ccc: insert("ccc")
+ddd: insert('"ddd"')

@@ -1,0 +1,25 @@
+list: l
+-
+
+aaa: "aaa"
+bbb: 'bbb'
+ccc: "ccc ccc"
+ddd: " ddd "
+eee: ' eee '
+fff: '"fff"'
+ggg: "'ggg'"
+hhh: ""
+iii: ''
+================ EXPECTED ================
+list: l
+-
+
+aaa: aaa
+bbb: bbb
+ccc: ccc ccc
+ddd: " ddd "
+eee: " eee "
+fff: '"fff"'
+ggg: "'ggg'"
+hhh: ""
+iii: ""
