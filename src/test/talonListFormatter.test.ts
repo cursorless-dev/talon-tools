@@ -25,7 +25,7 @@ bat:      b
     },
 
     {
-        title: "Multiple headers",
+        title: "Header order",
         pre: "app: app\nlist: l\n-\na:b",
         post: "list: l\napp: app\n-\n\na:        b\n",
     },

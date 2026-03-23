@@ -1,5 +1,8 @@
 import * as assert from "node:assert";
-import { talonFormatter } from "../talon/talonFormatter.js";
+import {
+    talonFormatter as originalTalonFormatter,
+    type Options,
+} from "../talon/talonFormatter.js";
 import { parseText } from "../node/parseText.js";
 import type { Content } from "./testUtils.js";
 import {
@@ -7,6 +10,7 @@ import {
     createNode,
     getContentString,
 } from "./testUtils.js";
+import type { SyntaxNode } from "../types.js";
 
 const fixtures: {
     title: string;
@@ -153,14 +157,14 @@ not   mode  : command
 tag :  stuff
 -
 
-some command : 
+some command :
     # stuff
     edit.left(  )
     key(  enter  )
     key(  enter  )
     sleep(   200ms  )
-    user.too_stuff( 5 ,  7  , true  ,  false  ) 
-    
+    user.too_stuff( 5 ,  7  , true  ,  false  )
+
 command    :                    "command"
 
 # hello
@@ -312,7 +316,7 @@ suite("Talon formatter", () => {
     test("Debug logs unknown syntax node types", async () => {
         const rootNode = createNode("mystery", "value");
         const output = await captureStreamWrite(process.stderr, () =>
-            talonFormatter(rootNode, {}, true),
+            talonFormatter(rootNode),
         );
         assert.equal(output.result, "value\n");
         assert.equal(
@@ -321,3 +325,7 @@ suite("Talon formatter", () => {
         );
     });
 });
+
+function talonFormatter(node: SyntaxNode, options: Options = {}): string {
+    return originalTalonFormatter(node, options, true);
+}
