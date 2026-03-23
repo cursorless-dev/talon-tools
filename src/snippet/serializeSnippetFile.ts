@@ -29,6 +29,7 @@ class SnippetSerializer {
     ) {}
 
     getText(snippetFile: SnippetFile): string {
+        const docDelimiter = "---";
         const documents: string[] = [];
 
         if (snippetFile.header != null) {
@@ -41,18 +42,18 @@ class SnippetSerializer {
 
         // Remove empty documents
         const result = documents
-            .filter(Boolean)
-            .join(`${this.eol}---${this.eol}${this.eol}`);
+            .filter((d) => d.length > 0)
+            .join(`${this.eol}${docDelimiter}${this.eol}${this.eol}`);
 
         if (result.length === 0) {
             return "";
         }
 
         if (this.insertFinalNewline) {
-            return result + `${this.eol}---${this.eol}`;
+            return result + `${this.eol}${docDelimiter}${this.eol}`;
         }
 
-        return result + `${this.eol}---`;
+        return result + `${this.eol}${docDelimiter}`;
     }
 
     private getDocumentText(document: SnippetHeader | Snippet): string {

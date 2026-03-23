@@ -19,25 +19,25 @@ export function talonListFormatter(
     talonList.headers.sort((a, _b) =>
         a.type === "header" && a.key === "list" ? -1 : 0,
     );
-    const result: string[] = [];
+    const lines: string[] = [];
 
     for (const header of talonList.headers) {
         if (header.type === "comment") {
-            result.push(header.text);
+            lines.push(header.text);
             continue;
         }
-        result.push(`${header.key}: ${header.value}`);
+        lines.push(`${header.key}: ${header.value}`);
     }
 
-    result.push("-", "");
+    lines.push("-", "");
 
     for (const item of talonList.items) {
         if (item.type === "empty") {
-            result.push("");
+            lines.push("");
             continue;
         }
         if (item.type === "comment") {
-            result.push(item.text);
+            lines.push(item.text);
             continue;
         }
         if (item.value != null) {
@@ -46,19 +46,19 @@ export function talonListFormatter(
                     ? `${item.key}: `.padEnd(columnWidth)
                     : `${item.key}: `;
             const value = convertQuotes(item.value);
-            result.push(`${keyWithColon}${value}`);
+            lines.push(`${keyWithColon}${value}`);
         } else {
-            result.push(item.key);
+            lines.push(item.key);
         }
     }
 
-    if (result.length === 0) {
+    if (lines.length === 0) {
         return "";
     }
 
     if (options.insertFinalNewline ?? DEFAULT_INSERT_FINAL_NEWLINE) {
-        result.push("");
+        lines.push("");
     }
 
-    return result.join(eol);
+    return lines.join(eol);
 }
