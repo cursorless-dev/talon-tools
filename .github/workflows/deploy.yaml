@@ -1,0 +1,56 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [Test]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    environment: production
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm --color ci
+
+      - name: Build
+        run: npm --color run build
+
+      - name: Read version from package.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=v$VERSION" >> $GITHUB_ENV
+
+      - name: Check whether this version is already published
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${{ env.version }}" > /dev/null; then
+            echo "Version ${{ env.version }} is already tagged."
+            exit 1
+          fi
+
+      - name: Publish to NPM
+        run: npx -y npm@11.6.2 publish --access public
+
+      - name: Create Git tag
+        run: |
+          git tag ${{ env.version }}
+          git push origin ${{ env.version }}
