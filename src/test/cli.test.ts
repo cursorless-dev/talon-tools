@@ -93,7 +93,7 @@ suite("CLI", () => {
             await fs.writeFile(unchangedFileName, "unchanged", "utf8");
             await fs.writeFile(changedFileName, "changed", "utf8");
 
-            const changedFileCount = await formatFiles({
+            const [changedFileCount] = await formatFiles({
                 cli,
                 logger,
                 check: false,
@@ -280,7 +280,7 @@ suite("CLI", () => {
                     debug: false,
                     filePath: fileName,
                 }),
-                /Failed to format '.*example\.txt': boom/,
+                /boom/,
             );
         } finally {
             await cleanupTempFile(fileName);

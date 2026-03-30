@@ -85,6 +85,21 @@ suite("Talon formatter", () => {
         assert.equal(actual, "aaa:      bbb\n");
     });
 
+    test("Syntax tree error", async () => {
+        const content = [
+            "^test [<user.ini>]$:",
+            'if ini: insert("{ini}")',
+        ].join("\n");
+        await assert.rejects(
+            () => talonFormatter(content),
+            (error) => {
+                assert.ok(error instanceof Error);
+                assert.equal(error.name, "SyntaxTreeError");
+                return true;
+            },
+        );
+    });
+
     test("Debug logs unknown syntax node types", async () => {
         const rootNode = createNode("mystery", "value");
         const output = await captureStreamWrite(process.stderr, () =>

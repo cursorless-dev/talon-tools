@@ -5,6 +5,8 @@ export const EXIT_FAIL = 1;
 // Exit code 2: Unexpected error
 export const EXIT_ERROR = 2;
 
+export type ExitCode = typeof EXIT_OK | typeof EXIT_FAIL | typeof EXIT_ERROR;
+
 export const DEFAULT_INDENT_WIDTH = 4;
 export const DEFAULT_MAX_LINE_LENGTH = 80;
 export const DEFAULT_INSERT_FINAL_NEWLINE = true;

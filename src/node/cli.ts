@@ -4,18 +4,24 @@ import * as path from "node:path";
 import * as process from "node:process";
 import type { Readable } from "node:stream";
 import type { CLI, Logger, ParsedArgs } from "../types.js";
-import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
-import { FilePatternError } from "./FilePatternError.js";
+import {
+    EXIT_ERROR,
+    EXIT_FAIL,
+    EXIT_OK,
+    type ExitCode,
+} from "../util/constants.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
-import { isMissingFileError } from "./isMissingFileError.js";
-import { setExitCode } from "./setExitCode.js";
+import { isSyntaxError } from "../util/SyntaxError.js";
 import { createLogger } from "./createLogger.js";
+import { FilePatternError } from "./FilePatternError.js";
 import { getOptionsFromConfig } from "./getOptionsFromConfig.js";
+import { isMissingFileError } from "./isMissingFileError.js";
 import { normalizeToPosix } from "./normalizeToPosix.js";
 import { parseArgs } from "./parseArgs.js";
 import { parseFilePatterns } from "./parseFilePatterns.js";
 import { printHelp } from "./printHelp.js";
 import { printVersion } from "./printVersion.js";
+import { setExitCode } from "./setExitCode.js";
 
 export async function main(cli: CLI): Promise<void> {
     let logger = createLogger();
@@ -47,7 +53,7 @@ async function mainUnsafe({
     cli,
     args,
     logger,
-}: MainUnsafeArgs): Promise<number> {
+}: MainUnsafeArgs): Promise<ExitCode> {
     if (args.help) {
         printHelp(cli);
         return EXIT_OK;
@@ -101,13 +107,13 @@ async function mainFormatFiles({
     check,
     debug,
     filePatterns,
-}: MainFormatFilesArgs): Promise<number> {
+}: MainFormatFilesArgs): Promise<ExitCode> {
     if (check) {
         logger.log("Checking formatting...");
     }
 
     const filePaths = await parseFilePatterns(cli, filePatterns);
-    const changedFileCount = await formatFiles({
+    const [changedFileCount, hasError] = await formatFiles({
         cli,
         logger,
         check,
@@ -120,11 +126,18 @@ async function mainFormatFiles({
             logger.warn(
                 `Code style issues found in ${changedFileCount} file(s).`,
             );
-            return EXIT_FAIL;
+            if (!hasError) {
+                return EXIT_FAIL;
+            }
         }
 
-        logger.log("All matched files use correct code style!");
-        return EXIT_OK;
+        if (!hasError) {
+            logger.log("All matched files use correct code style!");
+        }
+    }
+
+    if (hasError) {
+        return EXIT_ERROR;
     }
 
     return EXIT_OK;
@@ -144,24 +157,37 @@ export async function formatFiles({
     check,
     debug,
     filePaths,
-}: FormatFilesArgs): Promise<number> {
+}: FormatFilesArgs): Promise<[number, boolean]> {
     let changedFileCount = 0;
+    let hasError = false;
 
-    for (const fileName of filePaths) {
-        if (
-            await formatFile({
+    for (const filePath of filePaths) {
+        try {
+            const fileWasChanged = await formatFile({
                 cli,
                 logger,
                 check,
                 debug,
-                filePath: fileName,
-            })
-        ) {
-            changedFileCount++;
+                filePath,
+            });
+            if (fileWasChanged) {
+                changedFileCount++;
+            }
+        } catch (error) {
+            if (isSyntaxError(error)) {
+                logger.error(
+                    `${getDisplayPath(filePath)}${error.getLocation()}: ${error.message}`,
+                );
+            } else {
+                logger.error(
+                    `${getDisplayPath(filePath)}: ${getErrorMessage(error)}`,
+                );
+            }
+            hasError = true;
         }
     }
 
-    return changedFileCount;
+    return [changedFileCount, hasError];
 }
 
 interface FormatFileArgs {
@@ -200,12 +226,7 @@ export async function formatFile({
             return false;
         }
 
-        throw new Error(
-            `Failed to format '${filePath}': ${getErrorMessage(error)}`,
-            {
-                cause: error,
-            },
-        );
+        throw error;
     }
 }
 
@@ -227,13 +248,23 @@ export async function mainFormatStdin({
     stdin,
     check,
     debug,
-}: MainFormatStdinArgs): Promise<number> {
+}: MainFormatStdinArgs): Promise<ExitCode> {
     const input = await getStdin({ stdin });
     const fileEnding = cli.getStdinFileEnding(input);
-    const fileName = `stdin.${fileEnding}`;
-    const filePath = path.resolve(fileName);
-    const options = await getOptionsFromConfig(filePath);
-    const formatted = await cli.format(input, options, filePath, debug);
+    const fauxFileName = `stdin.${fileEnding}`;
+    const fauxFilePath = path.resolve(fauxFileName);
+    const options = await getOptionsFromConfig(fauxFilePath);
+    let formatted: string;
+
+    try {
+        formatted = await cli.format(input, options, fauxFilePath, debug);
+    } catch (error) {
+        if (isSyntaxError(error)) {
+            logger.error(`stdin${error.getLocation()}: ${error.message}`);
+            return EXIT_ERROR;
+        }
+        throw error;
+    }
 
     if (check) {
         if (input !== formatted) {

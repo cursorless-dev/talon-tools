@@ -7,6 +7,7 @@ import { createDebugLogger } from "../util/createDebugLogger.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
 import { getIndentation } from "../util/getIndentation.js";
+import { SyntaxTreeError } from "../util/SyntaxTreeError.js";
 import { convertQuotes } from "./convertQuotes.js";
 
 export type Options = FormatterOptions<
@@ -24,6 +25,10 @@ export function talonFormatter(
     options: Options = {},
     debug: boolean = false,
 ): string {
+    if (node.hasError) {
+        throw new SyntaxTreeError(node);
+    }
+
     const columnWidth = getColumnWidth(node.text) ?? options.columnWidth;
     const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);

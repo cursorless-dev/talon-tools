@@ -15,6 +15,9 @@ export function createNode(type: string, text: string): SyntaxNode {
         startPosition: { row: 0, column: 0 },
         endPosition: { row: 0, column: text.length },
         parent: null,
+        hasError: false,
+        isError: false,
+        isMissing: false,
         children: [],
     };
 }
