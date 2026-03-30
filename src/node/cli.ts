@@ -175,9 +175,7 @@ export async function formatFiles({
             }
         } catch (error) {
             if (isSyntaxError(error)) {
-                logger.error(
-                    `${getDisplayPath(filePath)}${error.getLocation()}: ${error.message}`,
-                );
+                logger.error(error.getFileMessage(getDisplayPath(filePath)));
             } else {
                 logger.error(
                     `${getDisplayPath(filePath)}: ${getErrorMessage(error)}`,
@@ -260,7 +258,7 @@ export async function mainFormatStdin({
         formatted = await cli.format(input, options, fauxFilePath, debug);
     } catch (error) {
         if (isSyntaxError(error)) {
-            logger.error(`stdin${error.getLocation()}: ${error.message}`);
+            logger.error(error.getFileMessage("stdin"));
             return EXIT_ERROR;
         }
         throw error;

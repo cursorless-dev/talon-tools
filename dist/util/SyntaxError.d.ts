@@ -1,7 +1,8 @@
 import type { Point } from "../types.js";
 export declare class SyntaxError extends Error {
-    private location?;
-    constructor(location?: Point | undefined);
-    getLocation(): string | undefined;
+    private point?;
+    private readonly location;
+    constructor(point?: Point | undefined);
+    getFileMessage(file: string): string;
 }
 export declare function isSyntaxError(error: unknown): error is SyntaxError;

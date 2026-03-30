@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Node } from "web-tree-sitter";
 import { Language, Parser } from "web-tree-sitter";
+import type { SyntaxNode } from "../types.js";
 
 type ParserName = "tree-sitter-talon" | "tree-sitter-query";
 
@@ -52,7 +52,7 @@ function getWasmFilePath(parserName: ParserName) {
 export async function parseText(
     text: string,
     parserName: ParserName,
-): Promise<Node> {
+): Promise<SyntaxNode> {
     await initTreeSitter();
 
     const language = await loadLanguage(parserName);

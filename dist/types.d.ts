@@ -50,6 +50,11 @@ export interface Point {
     row: number;
     column: number;
 }
+/**
+ * Internal representation of the Tree sitter node. Used so that our api doesn't
+ * need to export or expose clients to Tree sitter types. Also makes it simple
+ * to write tests internally.
+ */
 export interface SyntaxNode {
     id: number;
     text: string;
