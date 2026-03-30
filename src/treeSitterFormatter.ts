@@ -3,8 +3,9 @@ import { DEFAULT_INSERT_FINAL_NEWLINE } from "./util/constants.js";
 import { createDebugLogger } from "./util/createDebugLogger.js";
 import { getEndOfLine } from "./util/getEndOfLine.js";
 import { getIndentation } from "./util/getIndentation.js";
+import { SyntaxTreeError } from "./util/SyntaxTreeError.js";
 
-type Options = FormatterOptions<
+export type Options = FormatterOptions<
     "endOfLine" | "indentTabs" | "indentSize" | "insertFinalNewline"
 >;
 
@@ -13,6 +14,10 @@ export function treeSitterFormatter(
     options: Options = {},
     debug: boolean = false,
 ): string {
+    if (node.hasError) {
+        throw new SyntaxTreeError(node);
+    }
+
     const indentation = getIndentation(options.indentTabs, options.indentSize);
     const eol = getEndOfLine(options.endOfLine);
     const formatter = new TreeSitterFormatter(

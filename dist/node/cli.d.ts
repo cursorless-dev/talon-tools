@@ -1,5 +1,6 @@
 import type { Readable } from "node:stream";
 import type { CLI, Logger } from "../types.js";
+import { type ExitCode } from "../util/constants.js";
 export declare function main(cli: CLI): Promise<void>;
 interface FormatFilesArgs {
     cli: CLI;
@@ -8,7 +9,7 @@ interface FormatFilesArgs {
     debug: boolean;
     filePaths: string[];
 }
-export declare function formatFiles({ cli, logger, check, debug, filePaths, }: FormatFilesArgs): Promise<number>;
+export declare function formatFiles({ cli, logger, check, debug, filePaths, }: FormatFilesArgs): Promise<[number, boolean]>;
 interface FormatFileArgs {
     cli: CLI;
     logger: Logger;
@@ -24,5 +25,5 @@ interface MainFormatStdinArgs {
     check: boolean;
     debug: boolean;
 }
-export declare function mainFormatStdin({ cli, logger, stdin, check, debug, }: MainFormatStdinArgs): Promise<number>;
+export declare function mainFormatStdin({ cli, logger, stdin, check, debug, }: MainFormatStdinArgs): Promise<ExitCode>;
 export {};

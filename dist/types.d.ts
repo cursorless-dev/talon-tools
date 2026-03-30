@@ -46,7 +46,7 @@ export interface EditorConfigOptions extends KnownProps {
     column_width?: number | "unset";
     preserve_multiline?: boolean | "unset";
 }
-interface Point {
+export interface Point {
     row: number;
     column: number;
 }
@@ -56,7 +56,9 @@ export interface SyntaxNode {
     type: string;
     startPosition: Point;
     endPosition: Point;
+    hasError: boolean;
+    isError: boolean;
+    isMissing: boolean;
     parent: SyntaxNode | null;
     children: SyntaxNode[];
 }
-export {};
