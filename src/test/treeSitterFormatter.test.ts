@@ -1,9 +1,7 @@
 import * as assert from "node:assert";
-import {
-    treeSitterFormatter as originalTreeSitterFormatter,
-    type Options,
-} from "../treeSitterFormatter.js";
 import { parseText } from "../node/parseText.js";
+import { treeSitterFormatter as originalTreeSitterFormatter } from "../treeSitterFormatter.js";
+import type { Options } from "../treeSitterFormatter.js";
 import {
     captureStreamWrite,
     createNode,

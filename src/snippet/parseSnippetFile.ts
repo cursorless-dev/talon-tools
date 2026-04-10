@@ -5,25 +5,23 @@ export function parseSnippetFile(content: string): SnippetFile {
     const file: SnippetFile = { snippets: [] };
 
     for (const text of documentContents) {
-        const match = text.match(/^-$/m);
+        const match = /^-$/m.exec(text);
         const contextText = match != null ? text.slice(0, match.index) : text;
         const bodyText =
-            match != null ? text.slice(match.index! + match[0].length) : null;
-        const body = bodyText ? parseBody(bodyText) : null;
+            match != null ? text.slice(match.index + match[0].length) : null;
+        const body = bodyText != null ? parseBody(bodyText) : null;
         let context = parseContext(contextText);
 
         // Snippet with body
         if (body != null) {
-            if (context == null) {
-                context = { variables: [] };
-            }
+            context ??= { variables: [] };
             const { variables, ...rest } = context;
             file.snippets.push({ ...rest, body, variables });
         }
         // Header without body
         else if (context != null) {
-            if (file.header != null || file.snippets.length !== 0) {
-                throw Error("Header snippet must be first in file");
+            if (file.header != null || file.snippets.length > 0) {
+                throw new Error("Header snippet must be first in file");
             }
             file.header = context;
         }
@@ -63,7 +61,7 @@ function parseContext(text: string): Context | undefined {
                 break;
             default:
                 if (!key.startsWith("$")) {
-                    throw Error(`Invalid key '${key}'`);
+                    throw new Error(`Invalid key '${key}'`);
                 }
                 variables[key] = value;
         }
@@ -84,15 +82,16 @@ function parseContextPairs(text: string): Record<string, string> {
     for (const line of lines) {
         const parts = line.split(":");
         if (parts.length !== 2) {
-            throw Error(`Invalid line '${line}'`);
+            throw new Error(`Invalid line '${line}'`);
         }
         const key = parts[0].trim();
         const value = parts[1].trim();
         if (key.length === 0 || value.length === 0) {
-            throw Error(`Invalid line '${line}'`);
+            throw new Error(`Invalid line '${line}'`);
         }
+        // oxlint-disable-next-line typescript/no-unnecessary-condition
         if (pairs[key] != null) {
-            throw Error(`Duplicate key '${key}' in '${text}'`);
+            throw new Error(`Duplicate key '${key}' in '${text}'`);
         }
         pairs[key] = value;
     }
@@ -104,16 +103,14 @@ function parseVariables(variables: Record<string, string>): SnippetVariable[] {
     const variablesMap: Record<string, SnippetVariable> = {};
 
     const getVariable = (name: string): SnippetVariable => {
-        if (variablesMap[name] == null) {
-            variablesMap[name] = { name };
-        }
+        variablesMap[name] ??= { name };
         return variablesMap[name];
     };
 
     for (const [key, value] of Object.entries(variables)) {
         const parts = key.split(".");
         if (parts.length !== 2) {
-            throw Error(`Invalid variable key '${key}'`);
+            throw new Error(`Invalid variable key '${key}'`);
         }
         const name = parts[0].slice(1);
         const field = parts[1];
@@ -128,7 +125,7 @@ function parseVariables(variables: Record<string, string>): SnippetVariable[] {
                 getVariable(name).wrapperScope = value;
                 break;
             default:
-                throw Error(`Invalid variable key '${key}'`);
+                throw new Error(`Invalid variable key '${key}'`);
         }
     }
 
@@ -137,7 +134,7 @@ function parseVariables(variables: Record<string, string>): SnippetVariable[] {
 
 function parseBody(text: string): string[] | undefined {
     // Find first line that is not empty. Preserve indentation.
-    const matchLeading = text.match(/^[ \t]*\S/m);
+    const matchLeading = /^[ \t]*\S/m.exec(text);
     if (matchLeading?.index == null) {
         return undefined;
     }

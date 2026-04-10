@@ -5,7 +5,7 @@ import * as path from "node:path";
  * @param {string} filepath
  * @returns {string}
  */
-export const normalizeToPosix =
+export const normalizeToPosix: (filepath: string) => string =
     path.sep === "\\"
         ? (filepath: string) => filepath.replaceAll("\\", "/")
         : (filepath: string) => filepath;

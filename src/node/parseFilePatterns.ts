@@ -1,6 +1,6 @@
+import * as path from "node:path";
 import type { Options } from "fast-glob";
 import fastGlob from "fast-glob";
-import * as path from "node:path";
 import type { CLI } from "../types.js";
 import { GLOB_IGNORE_PATTERNS } from "../util/constants.js";
 import { FilePatternError } from "./FilePatternError.js";
@@ -11,7 +11,7 @@ export async function parseFilePatterns(
     cli: CLI,
     filePatterns: string[],
 ): Promise<string[]> {
-    const seen: Set<string> = new Set();
+    const seen = new Set<string>();
     const globFileEndingPattern = getGlobFileEndingsPattern(cli.fileEndings);
     const errorMessages: string[] = [];
 
@@ -56,15 +56,16 @@ export async function parseFilePatterns(
         }
 
         const glob = normalizeToPosix(pattern);
-        const files = (await fastGlob(glob, globOptions)).filter((file) =>
+        const allFiles = await fastGlob(glob, globOptions);
+        const filteredFiles = allFiles.filter((file) =>
             hasSupportedFileEnding(file, cli.fileEndings),
         );
-        if (files.length === 0) {
+        if (filteredFiles.length === 0) {
             errorMessages.push(
                 `No files matching the pattern were found: ${pattern}`,
             );
         }
-        for (const file of files) {
+        for (const file of filteredFiles) {
             seen.add(path.resolve(file));
         }
     }
@@ -73,7 +74,7 @@ export async function parseFilePatterns(
         throw new FilePatternError(errorMessages);
     }
 
-    return Array.from(seen).sort((a, b) => a.localeCompare(b));
+    return Array.from(seen).toSorted((a, b) => a.localeCompare(b));
 }
 
 function getGlobFileEndingsPattern(fileEndings: readonly string[]): string {

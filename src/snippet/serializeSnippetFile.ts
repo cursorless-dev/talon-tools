@@ -24,8 +24,8 @@ export function serializeSnippetFile(
 
 class SnippetSerializer {
     constructor(
-        private eol: string,
-        private insertFinalNewline: boolean,
+        private readonly eol: string,
+        private readonly insertFinalNewline: boolean,
     ) {}
 
     getText(snippetFile: SnippetFile): string {
@@ -49,10 +49,10 @@ class SnippetSerializer {
         }
 
         if (this.insertFinalNewline) {
-            return result + `${this.eol}${docDelimiter}${this.eol}`;
+            return `${result}${this.eol}${docDelimiter}${this.eol}`;
         }
 
-        return result + `${this.eol}${docDelimiter}`;
+        return `${result}${this.eol}${docDelimiter}`;
     }
 
     private getDocumentText(document: SnippetHeader | Snippet): string {

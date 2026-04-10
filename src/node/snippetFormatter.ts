@@ -13,7 +13,7 @@ void main({
         return fileEnding;
     },
 
-    format: async (text, options) => {
+    format: (text, options) => {
         const updated = snippetFormatter(text, options);
         return Promise.resolve(updated);
     },

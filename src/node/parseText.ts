@@ -8,6 +8,7 @@ type ParserName = "tree-sitter-talon" | "tree-sitter-query";
 
 let initPromise: Promise<void> | undefined;
 const languageCache = new Map<ParserName, Promise<Language>>();
+// oxlint-disable-next-line unicorn/prefer-import-meta-properties
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 function initTreeSitter() {

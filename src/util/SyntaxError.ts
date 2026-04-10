@@ -5,7 +5,7 @@ const shortMessage = "Syntax error";
 export class SyntaxError extends Error {
     private readonly location: string | undefined;
 
-    constructor(private point?: Point) {
+    constructor(private readonly point?: Point) {
         const location = getLocation(point);
         super(getMessage(location));
         this.name = "SyntaxError";

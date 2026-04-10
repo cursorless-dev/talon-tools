@@ -1,7 +1,7 @@
 import type { CLI } from "../types.js";
 import { KNOWN_ARGUMENTS } from "../types.js";
 
-export function printHelp(cli: CLI) {
+export function printHelp(cli: CLI): void {
     process.stdout.write(
         `Usage: ${cli.binName} [options] [file/dir/glob ...]\n`,
     );

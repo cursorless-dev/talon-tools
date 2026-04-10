@@ -1,5 +1,6 @@
 import assert from "node:assert";
-import { parseTalonList, type TalonList } from "../talon/parseTalonList.js";
+import { parseTalonList } from "../talon/parseTalonList.js";
+import type { TalonList } from "../talon/parseTalonList.js";
 
 suite("parseTalonList", () => {
     test("Parses headers, comments, and items", () => {

@@ -6,20 +6,20 @@ type LogCallback = (message: string) => void;
 type ColorizeCallback = (message: string, color: string) => string;
 type LoggerStream = Pick<NodeJS.WriteStream, "write"> & Partial<WriteStream>;
 
-const ANSI_RESET = "\u001b[0m";
-const ANSI_YELLOW = "\u001b[33m";
-const ANSI_RED = "\u001b[31m";
+const ANSI_RESET = "\u001B[0m";
+const ANSI_YELLOW = "\u001B[33m";
+const ANSI_RED = "\u001B[31m";
 const WARN_PREFIX = "[warn]";
 const ERROR_PREFIX = "[error]";
 
-export function createLogger(quiet: boolean = false): Logger {
+export function createLogger(quiet = false): Logger {
     return createLoggerFromStreams(process.stdout, process.stderr, quiet);
 }
 
 export function createLoggerFromStreams(
     stdout: LoggerStream,
     stderr: LoggerStream,
-    quiet: boolean = false,
+    quiet = false,
 ): Logger {
     const colorize: ColorizeCallback = shouldUseColor(stderr)
         ? (message, color) => `${color}${message}${ANSI_RESET}`
@@ -29,8 +29,12 @@ export function createLoggerFromStreams(
     let warn: LogCallback;
 
     if (quiet) {
-        log = () => {};
-        warn = () => {};
+        log = () => {
+            // no-op
+        };
+        warn = () => {
+            // no-op
+        };
     } else {
         log = (message: string) => {
             stdout.write(`${message}\n`);

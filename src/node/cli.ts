@@ -1,15 +1,11 @@
-import getStdin from "get-stdin";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as process from "node:process";
 import type { Readable } from "node:stream";
+import getStdin from "get-stdin";
 import type { CLI, Logger, ParsedArgs } from "../types.js";
-import {
-    EXIT_ERROR,
-    EXIT_FAIL,
-    EXIT_OK,
-    type ExitCode,
-} from "../util/constants.js";
+import { EXIT_ERROR, EXIT_FAIL, EXIT_OK } from "../util/constants.js";
+import type { ExitCode } from "../util/constants.js";
 import { getErrorMessage } from "../util/getErrorMessage.js";
 import { isSyntaxError } from "../util/SyntaxError.js";
 import { createLogger } from "./createLogger.js";
@@ -49,19 +45,15 @@ interface MainUnsafeArgs {
     logger: Logger;
 }
 
-async function mainUnsafe({
-    cli,
-    args,
-    logger,
-}: MainUnsafeArgs): Promise<ExitCode> {
+function mainUnsafe({ cli, args, logger }: MainUnsafeArgs): Promise<ExitCode> {
     if (args.help) {
         printHelp(cli);
-        return EXIT_OK;
+        return Promise.resolve(EXIT_OK);
     }
 
     if (args.version) {
         printVersion();
-        return EXIT_OK;
+        return Promise.resolve(EXIT_OK);
     }
 
     const hasFilePatterns = args.filePatterns.length > 0;
