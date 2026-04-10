@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import fastGlob from "fast-glob";
 import type { SyntaxNode } from "../types.js";
 
@@ -44,7 +45,8 @@ export async function captureStreamWrite<T>(
 export function getFixtures(
     dirName: string,
 ): { file: string; title: string }[] {
-    const cwd = import.meta.dirname;
+    // oxlint-disable-next-line unicorn/prefer-import-meta-properties
+    const cwd = path.dirname(fileURLToPath(import.meta.url));
     const fixtures = fastGlob
         .sync(`${dirName}/**`, { cwd, absolute: true })
         .toSorted()
