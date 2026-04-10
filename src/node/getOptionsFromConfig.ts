@@ -2,6 +2,7 @@ import * as editorconfig from "editorconfig";
 import type { EditorConfigOptions, Options } from "../types.js";
 
 export async function getOptionsFromConfig(filePath: string): Promise<Options> {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const config = (await editorconfig.parse(filePath)) as EditorConfigOptions;
 
     const options: Options = {};

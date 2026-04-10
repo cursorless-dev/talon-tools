@@ -1,8 +1,8 @@
 export function getColumnWidth(text: string): number | undefined {
-    const match = text.match(/# fmt: columnWidth=(\d+)/);
+    const match = /# fmt: columnWidth=(\d+)/.exec(text);
 
     if (match != null) {
-        return parseInt(match[1], 10);
+        return Number.parseInt(match[1], 10);
     }
 
     return undefined;

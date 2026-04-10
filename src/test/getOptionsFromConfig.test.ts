@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";

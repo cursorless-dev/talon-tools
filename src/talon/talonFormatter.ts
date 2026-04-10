@@ -23,7 +23,7 @@ export type Options = FormatterOptions<
 export function talonFormatter(
     node: SyntaxNode,
     options: Options = {},
-    debug: boolean = false,
+    debug = false,
 ): string {
     if (node.hasError) {
         throw new SyntaxTreeError(node);
@@ -45,17 +45,17 @@ export function talonFormatter(
 }
 
 class TalonFormatter {
-    private lines: string[] = [];
+    private readonly lines: string[] = [];
     private lastRow = 0;
-    private logger: DebugLogger;
+    private readonly logger: DebugLogger;
 
     constructor(
-        private indent: string,
-        private eol: string,
-        private maxLineLength: number,
-        private columnWidth: number | undefined,
-        private insertFinalNewline: boolean,
-        private preserveMultiline: boolean,
+        private readonly indent: string,
+        private readonly eol: string,
+        private readonly maxLineLength: number,
+        private readonly columnWidth: number | undefined,
+        private readonly insertFinalNewline: boolean,
+        private readonly preserveMultiline: boolean,
         debug: boolean,
     ) {
         this.logger = createDebugLogger(debug);
@@ -258,10 +258,7 @@ class TalonFormatter {
         }
     }
 
-    private pairWithChildren(
-        node: SyntaxNode,
-        unwrap: boolean = false,
-    ): string {
+    private pairWithChildren(node: SyntaxNode, unwrap = false): string {
         const { children } = node;
         const middle = children
             .slice(1, -1)
@@ -327,7 +324,7 @@ function rangeEqual(a: SyntaxNode, b: SyntaxNode): boolean {
 }
 
 function isFirstChild(node: SyntaxNode): boolean {
-    return node.id === node.parent?.children?.[0]?.id;
+    return node.id === node.parent?.children[0].id;
 }
 
 function formatString(node: SyntaxNode): string {

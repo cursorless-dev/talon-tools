@@ -12,7 +12,7 @@ export type Options = FormatterOptions<
 export function treeSitterFormatter(
     node: SyntaxNode,
     options: Options = {},
-    debug: boolean = false,
+    debug = false,
 ): string {
     if (node.hasError) {
         throw new SyntaxTreeError(node);
@@ -31,12 +31,12 @@ export function treeSitterFormatter(
 
 class TreeSitterFormatter {
     private lastRow = 0;
-    private logger: DebugLogger;
+    private readonly logger: DebugLogger;
 
     constructor(
-        private indentation: string,
-        private eol: string,
-        private insertFinalNewline: boolean,
+        private readonly indentation: string,
+        private readonly eol: string,
+        private readonly insertFinalNewline: boolean,
         debug: boolean,
     ) {
         this.logger = createDebugLogger(debug);
@@ -231,6 +231,6 @@ class TreeSitterFormatter {
     private getIndent(length: number): string {
         return length < 1
             ? ""
-            : new Array(length).fill(this.indentation).join("");
+            : Array.from({ length }, () => this.indentation).join("");
     }
 }

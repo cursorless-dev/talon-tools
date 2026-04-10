@@ -10,6 +10,10 @@ export const KNOWN_ARGUMENTS = [
 
 export type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
 
+export function isKnownArgument(value: string): value is KnownArgument {
+    return (KNOWN_ARGUMENTS as readonly string[]).includes(value);
+}
+
 export interface CLI {
     binName: "snippet-fmt" | "talon-fmt" | "tree-sitter-fmt";
     fileEndings: readonly string[];
@@ -65,7 +69,6 @@ export interface DebugLogger {
     debug(message: string): void;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 export interface EditorConfigOptions extends KnownProps {
     max_line_length?: number | "unset";
     column_width?: number | "unset";

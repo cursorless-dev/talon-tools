@@ -4,7 +4,7 @@ import { getFixture, getFixtures } from "./testUtils.js";
 
 suite("Snippet formatter", () => {
     for (const fixture of getFixtures("snippetFixtures")) {
-        test(fixture.title, function () {
+        test(fixture.title, () => {
             const { input, expected } = getFixture(fixture.file);
             const actual = snippetFormatter(input);
             assert.equal(actual, expected);

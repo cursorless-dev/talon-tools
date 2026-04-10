@@ -2,9 +2,9 @@ import * as assert from "node:assert";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { FilePatternError } from "../node/FilePatternError.js";
 import { parseFilePatterns } from "../node/parseFilePatterns.js";
 import type { CLI } from "../types.js";
-import { FilePatternError } from "../node/FilePatternError.js";
 
 suite("Parse file patterns", () => {
     test("Returns explicit files as absolute paths", async () => {
@@ -151,6 +151,7 @@ suite("Parse file patterns", () => {
         }
     });
 
+    // oxlint-disable-next-line func-names
     test("Expands Windows-style glob patterns on Windows", async function () {
         if (path.sep !== "\\") {
             this.skip();
@@ -170,7 +171,9 @@ suite("Parse file patterns", () => {
             );
             process.chdir(directory);
 
-            const files = await parseFilePatterns(createCLI(), ["**\\*.txt"]);
+            const files = await parseFilePatterns(createCLI(), [
+                String.raw`**\*.txt`,
+            ]);
 
             assert.deepEqual(files, [
                 path.join(directory, "nested", "two.txt"),
@@ -202,6 +205,7 @@ suite("Parse file patterns", () => {
         }
     });
 
+    // oxlint-disable-next-line func-names
     test("Rejects symbolic links", async function () {
         const directory = await createTempDirectory();
         const cwd = process.cwd();
@@ -321,10 +325,10 @@ function createCLI(fileEndings: readonly string[] = ["txt"]): CLI {
     };
 }
 
-async function createTempDirectory(): Promise<string> {
+function createTempDirectory(): Promise<string> {
     return fs.mkdtemp(path.join(os.tmpdir(), "talonfmt-patterns-"));
 }
 
-async function cleanupDirectory(directory: string): Promise<void> {
-    await fs.rm(directory, { recursive: true, force: true });
+function cleanupDirectory(directory: string): Promise<void> {
+    return fs.rm(directory, { recursive: true, force: true });
 }

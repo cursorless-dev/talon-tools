@@ -1,6 +1,8 @@
-import esbuild, { type BuildOptions } from "esbuild";
+import { exit } from "node:process";
+import esbuild from "esbuild";
+import type { BuildOptions } from "esbuild";
 
-export async function build() {
+async function build(): Promise<void> {
     console.log("Running esbuild...");
 
     const options: BuildOptions = {
@@ -32,7 +34,9 @@ export async function build() {
     });
 }
 
-void build().catch((e) => {
-    console.error(e);
-    process.exit(1);
-});
+try {
+    await build();
+} catch (error) {
+    console.error(error);
+    exit(1);
+}

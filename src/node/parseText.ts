@@ -1,6 +1,5 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import { Language, Parser } from "web-tree-sitter";
 import type { SyntaxNode } from "../types.js";
 
@@ -8,7 +7,7 @@ type ParserName = "tree-sitter-talon" | "tree-sitter-query";
 
 let initPromise: Promise<void> | undefined;
 const languageCache = new Map<ParserName, Promise<Language>>();
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const moduleDir = import.meta.dirname;
 
 function initTreeSitter() {
     initPromise ??= Parser.init();

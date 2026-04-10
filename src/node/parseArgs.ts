@@ -1,3 +1,4 @@
+import { isKnownArgument } from "../types.js";
 import type { KnownArgument, ParsedArgs } from "../types.js";
 import { getDefaultArguments } from "./getDefaultArguments.js";
 
@@ -13,7 +14,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
             break;
         }
 
-        if (parseKnownArgument(result, arg as KnownArgument)) {
+        if (isKnownArgument(arg) && parseKnownArgument(result, arg)) {
             continue;
         }
 

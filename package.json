@@ -37,35 +37,32 @@
     "scripts": {
         "build": "npm run clean && tsc -p . && tsx ./src/build.ts",
         "clean": "rm -rf dist/*",
-        "lint": "npm run lint:ts &&npm run lint:fmt",
-        "lint:ts": "tsc -p . --noEmit && eslint src",
-        "lint:fmt": "prettier --check .",
+        "lint": "npm run typecheck && npm run lint:ts && npm run lint:fmt",
+        "typecheck": "tsc -p . --noEmit",
+        "lint:ts": "oxlint -c oxlint.config.mts --deny-warnings .",
+        "lint:fmt": "oxfmt --check .",
         "fix": "npm run fix:ts && npm run fix:fmt",
-        "fix:ts": "eslint src --fix",
-        "fix:fmt": "prettier --write --list-different .",
+        "fix:ts": "oxlint -c oxlint.config.mts --fix .",
+        "fix:fmt": "oxfmt .",
         "test": "tsx src/test/runAllTests.ts",
         "test:subset": "tsx src/test/runAllTests.ts --subset"
     },
     "dependencies": {
-        "@cursorless/tree-sitter-wasms": "^0.7.0",
+        "@cursorless/tree-sitter-wasms": "^0.8.1",
         "editorconfig": "^3.0.2",
         "fast-glob": "^3.3.3",
         "get-stdin": "^10.0.0",
-        "web-tree-sitter": "^0.26.7"
+        "web-tree-sitter": "^0.26.8"
     },
     "devDependencies": {
-        "@eslint/js": "^9.39.4",
         "@types/mocha": "^10.0.10",
-        "@types/node": "^24.12.0",
-        "esbuild": "^0.27.4",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-import": "^2.32.0",
-        "eslint": "^9.39.4",
-        "jiti": "^2.6.1",
+        "@types/node": "^24.12.2",
+        "esbuild": "^0.28.0",
         "mocha": "^11.7.5",
-        "prettier": "^3.8.1",
+        "oxfmt": "^0.44.0",
+        "oxlint-tsgolint": "^0.20.0",
+        "oxlint": "^1.59.0",
         "tsx": "^4.21.0",
-        "typescript-eslint": "^8.57.1",
-        "typescript": "^5.9.3"
+        "typescript": "^6.0.2"
     }
 }

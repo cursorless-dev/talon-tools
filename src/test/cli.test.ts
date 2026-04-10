@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+// oxlint-disable node/no-process-env
 
 import * as assert from "node:assert";
 import fs from "node:fs/promises";
@@ -290,7 +290,7 @@ suite("CLI", () => {
     test("Writes formatted stdin to stdout", async () => {
         const cli = createCLI((text) => `${text} updated`);
         const logger = createTestLogger();
-        const output = await captureStreamWrite(process.stdout, async () =>
+        const output = await captureStreamWrite(process.stdout, () =>
             readAndFormatStdin(cli, logger, "content"),
         );
 
@@ -300,9 +300,9 @@ suite("CLI", () => {
 
     test("Reports stdin formatting issues to stderr in check mode", async () => {
         const cli = createCLI((text) => `${text} updated`);
-        const output = await withNoColor(async () => {
+        const output = await withNoColor(() => {
             const logger = createLogger();
-            return captureStreamWrite(process.stderr, async () =>
+            return captureStreamWrite(process.stderr, () =>
                 readAndFormatStdin(cli, logger, "content", true),
             );
         });
@@ -324,8 +324,8 @@ suite("CLI", () => {
         assert.equal(
             stderr.getText(),
             [
-                "\u001b[33m[warn]\u001b[0m warn",
-                "\u001b[31m[error]\u001b[0m error",
+                "\u001B[33m[warn]\u001B[0m warn",
+                "\u001B[31m[error]\u001B[0m error",
                 "",
             ].join("\n"),
         );
@@ -341,7 +341,7 @@ suite("CLI", () => {
         const logger = createTestLogger();
 
         try {
-            const stdout = await captureStreamWrite(process.stdout, async () =>
+            const stdout = await captureStreamWrite(process.stdout, () =>
                 formatFile({
                     cli,
                     logger,
@@ -350,7 +350,7 @@ suite("CLI", () => {
                     filePath: fileName,
                 }),
             );
-            const stderr = await captureStreamWrite(process.stderr, async () =>
+            const stderr = await captureStreamWrite(process.stderr, () =>
                 Promise.resolve(),
             );
 
@@ -378,7 +378,7 @@ suite("CLI", () => {
         try {
             process.argv = ["node", "talon-fmt", "--check", fileName];
 
-            const output = await withNoColor(async () => {
+            const output = await withNoColor(() => {
                 return captureStdoutAndStderr(async () => {
                     await main(cli);
                     return process.exitCode;
@@ -388,11 +388,9 @@ suite("CLI", () => {
             assert.equal(output.result, EXIT_FAIL);
             assert.equal(
                 output.stdoutText,
-                [
-                    "Checking formatting...",
-                    `${getDisplayPath(fileName)}`,
-                    "",
-                ].join("\n"),
+                ["Checking formatting...", getDisplayPath(fileName), ""].join(
+                    "\n",
+                ),
             );
             assert.equal(
                 output.stderrText,
@@ -443,10 +441,10 @@ suite("CLI", () => {
     test("Returns success for unchanged stdin in check mode", async () => {
         const cli = createCLI((text) => text);
         const logger = createTestLogger();
-        const stderr = await captureStreamWrite(process.stderr, async () =>
+        const stderr = await captureStreamWrite(process.stderr, () =>
             readAndFormatStdin(cli, logger, "content", true),
         );
-        const stdout = await captureStreamWrite(process.stdout, async () =>
+        const stdout = await captureStreamWrite(process.stdout, () =>
             readAndFormatStdin(cli, logger, "content", true),
         );
 
@@ -629,7 +627,7 @@ suite("CLI", () => {
         try {
             process.argv = ["node", "talon-fmt", "--version"];
 
-            const output = await withNoColor(async () => {
+            const output = await withNoColor(() => {
                 return captureStdoutAndStderr(async () => {
                     await main(cli);
                     return process.exitCode;
@@ -656,7 +654,7 @@ suite("CLI", () => {
             process.chdir(directory);
             process.argv = ["node", "talon-fmt", "**/*.txt"];
 
-            const output = await withNoColor(async () => {
+            const output = await withNoColor(() => {
                 return captureStdoutAndStderr(async () => {
                     await main(cli);
                     return process.exitCode;
@@ -687,7 +685,7 @@ suite("CLI", () => {
         const logger = createTestLogger();
 
         try {
-            const output = await captureStreamWrite(process.stdout, async () =>
+            const output = await captureStreamWrite(process.stdout, () =>
                 formatFile({
                     cli,
                     logger,
@@ -760,11 +758,11 @@ function createCLI(
     };
 }
 
-async function readAndFormatStdin(
+function readAndFormatStdin(
     cli: CLI,
     logger: Logger,
     input: string,
-    check: boolean = false,
+    check = false,
 ): Promise<number> {
     const stdin = new PassThrough();
     Object.defineProperty(stdin, "isTTY", { value: false });
@@ -786,6 +784,7 @@ async function captureStreamWrite<T>(
     let text = "";
     const originalWrite = stream.write.bind(stream);
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     (stream.write as unknown as (chunk: string) => boolean) = (
         chunk: string | Uint8Array,
     ) => {
@@ -809,6 +808,7 @@ async function captureStdoutAndStderr<T>(
     const originalStdoutWrite = process.stdout.write.bind(process.stdout);
     const originalStderrWrite = process.stderr.write.bind(process.stderr);
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     (process.stdout.write as unknown as (chunk: string) => boolean) = (
         chunk: string | Uint8Array,
     ) => {
@@ -816,6 +816,7 @@ async function captureStdoutAndStderr<T>(
         return true;
     };
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     (process.stderr.write as unknown as (chunk: string) => boolean) = (
         chunk: string | Uint8Array,
     ) => {

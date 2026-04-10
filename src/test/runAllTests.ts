@@ -1,7 +1,6 @@
+import { exit } from "node:process";
 import fastGlob from "fast-glob";
 import Mocha from "mocha";
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import { getGrep } from "./testUtils.js";
 
 const mocha = new Mocha({
@@ -10,14 +9,16 @@ const mocha = new Mocha({
     grep: getGrep(),
 });
 
-const cwd = path.dirname(fileURLToPath(import.meta.url));
-const files = fastGlob.sync("**/**.test.ts", { cwd, absolute: true }).sort();
+const cwd = import.meta.dirname;
+const files = fastGlob
+    .sync("**/**.test.ts", { cwd, absolute: true })
+    .toSorted();
 
 files.forEach((f) => mocha.addFile(f));
 
 mocha.run((failures) => {
     if (failures > 0) {
         console.error(`${failures} tests failed.`);
-        process.exit(1);
+        exit(1);
     }
 });

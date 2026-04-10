@@ -1,11 +1,7 @@
-import fastGlob from "fast-glob";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import fastGlob from "fast-glob";
 import type { SyntaxNode } from "../types.js";
-import { fileURLToPath } from "node:url";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function createNode(type: string, text: string): SyntaxNode {
     return {
@@ -29,6 +25,7 @@ export async function captureStreamWrite<T>(
     let text = "";
     const originalWrite = stream.write.bind(stream);
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     (stream.write as unknown as (chunk: string) => boolean) = (
         chunk: string | Uint8Array,
     ) => {
@@ -47,9 +44,10 @@ export async function captureStreamWrite<T>(
 export function getFixtures(
     dirName: string,
 ): { file: string; title: string }[] {
+    const cwd = import.meta.dirname;
     const fixtures = fastGlob
-        .sync(`${dirName}/**`, { cwd: __dirname, absolute: true })
-        .sort()
+        .sync(`${dirName}/**`, { cwd, absolute: true })
+        .toSorted()
         .map((file) => ({ file, title: path.basename(file, ".txt") }));
 
     if (fixtures.length === 0) {
@@ -66,14 +64,15 @@ export function getFixture(fixturePath: string): {
     expected: string;
 } {
     const fixtureContent = fs
-        .readFileSync(fixturePath, "utf-8")
+        .readFileSync(fixturePath, "utf8")
         .replaceAll("\r\n", "\n");
-    const [input, expected, ...rest] = fixtureContent.split(FIXTURE_DIVIDER);
+    const parts = fixtureContent.split(FIXTURE_DIVIDER);
 
-    if (expected == null || rest.length > 0) {
+    if (parts.length !== 2) {
         throw new Error(`Invalid fixture file '${fixturePath}'`);
     }
 
+    const [input, expected] = parts;
     return { input, expected };
 }
 
@@ -82,8 +81,11 @@ export function getGrep(): string | undefined {
     if (!args.includes("--subset")) {
         return undefined;
     }
-    const subsetFile = path.join(__dirname, "testSubsetGrep.properties");
-    const content = fs.readFileSync(subsetFile, "utf-8");
+    const subsetFile = path.join(
+        import.meta.dirname,
+        "testSubsetGrep.properties",
+    );
+    const content = fs.readFileSync(subsetFile, "utf8");
     const pattern = content
         .split(/\r?\n/)
         .map((line) => line.trim())

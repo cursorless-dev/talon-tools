@@ -2,8 +2,8 @@
 
 import { talonListFormatter } from "../lib.js";
 import { talonFormatter } from "../talon/talonFormatter.js";
-import { parseText } from "./parseText.js";
 import { main } from "./cli.js";
+import { parseText } from "./parseText.js";
 
 const fileEndingTalon = "talon";
 const fileEndingTalonList = "talon-list";
@@ -18,8 +18,7 @@ void main({
 
     format: async (text, options, filePath, debug) => {
         if (isListFile(text, filePath)) {
-            const updated = talonListFormatter(text, options);
-            return Promise.resolve(updated);
+            return talonListFormatter(text, options);
         }
 
         const node = await parseText(text, "tree-sitter-talon");
