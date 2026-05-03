@@ -33,7 +33,7 @@ class TreeSitterFormatter {
     private lastRow = 0;
     private readonly logger: DebugLogger;
 
-    constructor(
+    public constructor(
         private readonly indentation: string,
         private readonly eol: string,
         private readonly insertFinalNewline: boolean,
@@ -42,7 +42,7 @@ class TreeSitterFormatter {
         this.logger = createDebugLogger(debug);
     }
 
-    getText(node: SyntaxNode): string {
+    public getText(node: SyntaxNode): string {
         const nodeText = this.getNodeText(node, 0);
 
         if (nodeText.length === 0) {

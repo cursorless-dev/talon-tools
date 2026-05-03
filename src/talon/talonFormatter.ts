@@ -49,7 +49,7 @@ class TalonFormatter {
     private lastRow = 0;
     private readonly logger: DebugLogger;
 
-    constructor(
+    public constructor(
         private readonly indent: string,
         private readonly eol: string,
         private readonly maxLineLength: number,
@@ -61,7 +61,7 @@ class TalonFormatter {
         this.logger = createDebugLogger(debug);
     }
 
-    getText(node: SyntaxNode): string {
+    public getText(node: SyntaxNode): string {
         this.addNode(node);
 
         const result = this.lines.join(this.eol).trimEnd();
@@ -211,15 +211,22 @@ class TalonFormatter {
             case "deck_binding":
             case "tag_import_declaration":
             case "match":
+            case "for_statement":
+            case "if_statement":
                 return node.children.map((n) => this.getNodeText(n)).join("");
 
             case "string":
                 return formatString(node);
 
             case "match_modifier":
+            case "for":
+            case "if":
             case ":":
             case ",":
                 return `${node.text} `;
+
+            case "in":
+                return ` ${node.text} `;
 
             case "implicit_string":
                 return node.text.trim();
@@ -282,7 +289,10 @@ class TalonFormatter {
                 isLeftRightSingleLine(leftNode, rightNodes)
             ) {
                 const rightNode = rightNodes[0];
-                if (rightNode.children.length === 1) {
+                if (
+                    rightNode.children.length === 1 &&
+                    !forceMultilineBody(rightNode.children[0])
+                ) {
                     const right = this.getNodeText(rightNode.children[0]);
                     const leftWithPadding =
                         this.columnWidth != null
@@ -307,6 +317,19 @@ class TalonFormatter {
     }
 }
 
+// Returns true if the node should remain in the declaration block instead of
+// being inlined after the command colon.
+function forceMultilineBody(node: SyntaxNode): boolean {
+    switch (node.type) {
+        case "if_statement":
+        case "for_statement":
+            return true;
+        default:
+            return false;
+    }
+}
+
+// Returns true if the left and right nodes are on the same line, allowing them to be formatted on a single line.
 function isLeftRightSingleLine(
     left: SyntaxNode,
     rights: SyntaxNode[],
