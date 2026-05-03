@@ -1,0 +1,5 @@
+command :
+    for  a  in  "test" :  print(a)
+================ EXPECTED ================
+command:
+    for a in "test": print(a)

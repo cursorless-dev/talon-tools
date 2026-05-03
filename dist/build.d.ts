@@ -1,1 +1,1 @@
-export declare function build(): Promise<void>;
+export {};

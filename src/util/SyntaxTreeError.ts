@@ -2,7 +2,7 @@ import type { SyntaxNode } from "../types.js";
 import { SyntaxError } from "./SyntaxError.js";
 
 export class SyntaxTreeError extends SyntaxError {
-    constructor(rootNode: SyntaxNode) {
+    public constructor(rootNode: SyntaxNode) {
         super(findFirstProblemNode(rootNode)?.startPosition);
         this.name = "SyntaxTreeError";
     }

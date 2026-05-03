@@ -1,4 +1,4 @@
-export * from "./parseSnippetFile.js";
-export * from "./serializeSnippetFile.js";
-export * from "./snippetFormatter.js";
-export * from "./snippetTypes.js";
+export { parseSnippetFile } from "./parseSnippetFile.js";
+export { serializeSnippetFile } from "./serializeSnippetFile.js";
+export { snippetFormatter } from "./snippetFormatter.js";
+export type * from "./snippetTypes.js";

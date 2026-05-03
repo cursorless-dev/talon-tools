@@ -23,12 +23,12 @@ export function serializeSnippetFile(
 }
 
 class SnippetSerializer {
-    constructor(
+    public constructor(
         private readonly eol: string,
         private readonly insertFinalNewline: boolean,
     ) {}
 
-    getText(snippetFile: SnippetFile): string {
+    public getText(snippetFile: SnippetFile): string {
         const docDelimiter = "---";
         const documents: string[] = [];
 

@@ -1,0 +1,5 @@
+command :
+    if  true :  print( "true" )
+================ EXPECTED ================
+command:
+    if true: print("true")

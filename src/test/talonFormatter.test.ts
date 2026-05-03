@@ -86,12 +86,8 @@ suite("Talon formatter", () => {
     });
 
     test("Syntax tree error", async () => {
-        const content = [
-            "^test [<user.ini>]$:",
-            'if ini: insert("{ini}")',
-        ].join("\n");
         await assert.rejects(
-            () => talonFormatter(content),
+            () => talonFormatter("foo . bar: baz"),
             (error) => {
                 assert.ok(error instanceof Error);
                 assert.equal(error.name, "SyntaxTreeError");

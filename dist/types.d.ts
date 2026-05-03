@@ -1,6 +1,7 @@
 import type { KnownProps } from "editorconfig";
 export declare const KNOWN_ARGUMENTS: readonly ["--help", "--version", "--quiet", "--check", "--debug"];
 export type KnownArgument = (typeof KNOWN_ARGUMENTS)[number];
+export declare function isKnownArgument(value: string): value is KnownArgument;
 export interface CLI {
     binName: "snippet-fmt" | "talon-fmt" | "tree-sitter-fmt";
     fileEndings: readonly string[];

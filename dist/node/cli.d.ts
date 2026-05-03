@@ -1,6 +1,6 @@
 import type { Readable } from "node:stream";
 import type { CLI, Logger } from "../types.js";
-import { type ExitCode } from "../util/constants.js";
+import type { ExitCode } from "../util/constants.js";
 export declare function main(cli: CLI): Promise<void>;
 interface FormatFilesArgs {
     cli: CLI;
