@@ -1,14 +1,13 @@
 {
     "name": "@cursorless/talon-tools",
-    "version": "0.11.1",
+    "version": "0.11.2",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Cursorless Dev",
     "license": "MIT",
     "type": "module",
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.d.ts",
-        "!dist/test/**",
+        "dist",
+        "!dist/test",
         "!dist/build.*"
     ],
     "types": "./dist/lib.d.ts",
@@ -36,7 +35,7 @@
         "url": "https://github.com/sponsors/cursorless-dev"
     },
     "scripts": {
-        "build": "npm run clean && tsc -p . && tsx ./src/build.ts",
+        "compile": "npm run clean && tsc -p . && tsx ./src/build.ts",
         "clean": "rm -rf dist/*",
         "lint": "npm run typecheck && npm run lint:ts && npm run lint:fmt",
         "typecheck": "tsc -p . --noEmit",

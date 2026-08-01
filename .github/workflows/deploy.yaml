@@ -32,8 +32,8 @@ jobs:
       - name: Install dependencies
         run: npm --color ci
 
-      - name: Build
-        run: npm --color run build
+      - name: Build dist
+        run: npm --color run compile
 
       - name: Read version from package.json
         run: |
