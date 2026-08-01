@@ -147,4 +147,4 @@ When creating a new release do the following:
 
 - Update version in [`package.json`](./package.json)
 - Update version in [`README.md`](./README.md#pre-commit)
-- Run compile: `npm run compile`
+- Run build/compile: `npm run compile`
