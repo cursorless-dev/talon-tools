@@ -213,6 +213,8 @@ class TalonFormatter {
             case "match":
             case "for_statement":
             case "if_statement":
+            case "repeat":
+            case "repeat1":
                 return node.children.map((n) => this.getNodeText(n)).join("");
 
             case "string":
@@ -249,14 +251,14 @@ class TalonFormatter {
             case "float":
             case "start_anchor":
             case "end_anchor":
-            case "repeat":
             case "deck(":
-            case "repeat1":
             case "(":
             case ")":
             case "=":
             case "-":
             case "|":
+            case "+":
+            case "*":
                 return node.text;
 
             default:
