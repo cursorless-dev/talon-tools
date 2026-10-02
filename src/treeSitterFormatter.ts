@@ -65,7 +65,7 @@ class TreeSitterFormatter {
     }
 
     private getNamedNodeText(node: SyntaxNode, numIndents: number): string {
-        const index = node.children.findIndex((n) => n.type === ")");
+        const index = node.children.findLastIndex((n) => n.type === ")");
         const first = node.children
             .slice(0, 2)
             .map((n) => n.text)
@@ -89,18 +89,30 @@ class TreeSitterFormatter {
         ].join(this.eol);
     }
 
-    private getListText(node: SyntaxNode, numIndents: number): string {
-        const index = node.children.findIndex((n) => n.type === "]");
+    private getVerticalPairNodeText(
+        node: SyntaxNode,
+        closingDelimiter: string,
+        numIndents: number,
+    ): string {
+        const index = node.children.findLastIndex(
+            (n) => n.type === closingDelimiter,
+        );
+        if (index === -1) {
+            throw new Error(
+                `Closing delimiter "${closingDelimiter}" not found in node ${node.type}`,
+            );
+        }
         const first = node.children[0].text;
+        const middle = node.children.slice(1, index);
         const last = node.children
             .slice(index)
-            .map((n) => n.text)
-            .join(" ");
+            .map((n, i) =>
+                i > 0 && n.type !== "quantifier" ? ` ${n.text}` : n.text,
+            )
+            .join("");
         const parts = [
             `${this.getIndent(numIndents)}${first}`,
-            ...node.children
-                .slice(1, index)
-                .map((n) => this.getNodeText(n, numIndents + 1)),
+            ...middle.map((n) => this.getNodeText(n, numIndents + 1)),
             `${this.getIndent(numIndents)}${last}`,
         ];
         return parts.join(this.eol);
@@ -154,15 +166,18 @@ class TreeSitterFormatter {
     }
 
     private getNodeTextInternal(node: SyntaxNode, numIndents: number): string {
+        // console.log(node.type, node.text);
         switch (node.type) {
             case "program":
-                return this.joinLines(node.children, 0);
+                return node.children
+                    .map((n) => this.getNodeText(n, numIndents))
+                    .join(this.eol);
 
             case "grouping":
-                return this.joinLines(node.children, numIndents + 1);
+                return this.getVerticalPairNodeText(node, ")", numIndents);
 
             case "list":
-                return this.getListText(node, numIndents);
+                return this.getVerticalPairNodeText(node, "]", numIndents);
 
             case "named_node":
                 return this.getNamedNodeText(node, numIndents);
@@ -212,20 +227,6 @@ class TreeSitterFormatter {
                 this.logger.debug(`Unknown syntax node type '${node.type}'`);
                 return node.text;
         }
-    }
-
-    private joinLines(nodes: SyntaxNode[], numIndents: number): string {
-        if (nodes.length === 0) {
-            return "";
-        }
-        const lastIsQuantifier = nodes[nodes.length - 1].type === "quantifier";
-        const nodesToUse = lastIsQuantifier ? nodes.slice(0, -1) : nodes;
-        const text = nodesToUse
-            .map((n) => this.getNodeText(n, numIndents))
-            .join(this.eol);
-        return lastIsQuantifier
-            ? `${text}${nodes[nodes.length - 1].text}`
-            : text;
     }
 
     private getIndent(length: number): string {

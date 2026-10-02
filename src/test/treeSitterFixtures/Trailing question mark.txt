@@ -1,8 +1,11 @@
-(("." (type))?)?
+(("." (type)?@Named)?@Group[(type)]?@List)?
 ================ EXPECTED ================
 (
     (
         "."
+        (type)? @Named
+    )? @Group
+    [
         (type)
-    )?
+    ]? @List
 )?
