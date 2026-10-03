@@ -100,7 +100,7 @@ foo bar baz:   "foo bar baz"
 ```yaml
 repos:
   - repo: https://github.com/cursorless-dev/talon-tools
-    rev: v0.12.0
+    rev: v0.12.1
     hooks:
       - id: talon-fmt
       - id: snippet-fmt
@@ -147,4 +147,5 @@ When creating a new release do the following:
 
 - Update version in [`package.json`](./package.json)
 - Update version in [`README.md`](./README.md#pre-commit)
+- Update lock file: `npm install`
 - Run build/compile: `npm run compile`
