@@ -64,58 +64,46 @@ class TreeSitterFormatter {
         return `${nl}${text}`;
     }
 
-    private getNamedNodeText(node: SyntaxNode, numIndents: number): string {
-        const index = node.children.findLastIndex((n) => n.type === ")");
+    private getMatchingPairText(
+        node: SyntaxNode,
+        numLeadingNodes: number,
+        closingDelimiter: string,
+        allowInline: boolean,
+        numIndents: number,
+    ): string {
+        const closingDelimiterIndex = node.children.findLastIndex(
+            (n) => n.type === closingDelimiter,
+        );
+        if (closingDelimiterIndex === -1) {
+            throw new Error(
+                `Closing delimiter "${closingDelimiter}" not found in node ${node.type}`,
+            );
+        }
+
         const first = node.children
-            .slice(0, 2)
+            .slice(0, numLeadingNodes)
             .map((n) => n.text)
             .join("");
-        const last = node.children
-            .slice(index)
-            .map((n) => this.getNodeText(n, 0))
-            .join("");
-        const interior = node.children
-            .slice(2, index)
+        const middle = node.children
+            .slice(numLeadingNodes, closingDelimiterIndex)
             .map((n) => this.getNodeText(n, numIndents + 1));
+        const last = node.children
+            .slice(closingDelimiterIndex)
+            .map((n, i) =>
+                i > 0 && n.type !== "quantifier" ? ` ${n.text}` : n.text,
+            )
+            .join("");
+
         // Inline node
-        if (interior.length === 0) {
+        if (allowInline && middle.length === 0) {
             return `${this.getIndent(numIndents)}${first}${last}`;
         }
         // Multiline node
         return [
             `${this.getIndent(numIndents)}${first}`,
-            ...interior,
+            ...middle,
             `${this.getIndent(numIndents)}${last}`,
         ].join(this.eol);
-    }
-
-    private getVerticalPairNodeText(
-        node: SyntaxNode,
-        closingDelimiter: string,
-        numIndents: number,
-    ): string {
-        const index = node.children.findLastIndex(
-            (n) => n.type === closingDelimiter,
-        );
-        if (index === -1) {
-            throw new Error(
-                `Closing delimiter "${closingDelimiter}" not found in node ${node.type}`,
-            );
-        }
-        const first = node.children[0].text;
-        const middle = node.children.slice(1, index);
-        const last = node.children
-            .slice(index)
-            .map((n, i) =>
-                i > 0 && n.type !== "quantifier" ? ` ${n.text}` : n.text,
-            )
-            .join("");
-        const parts = [
-            `${this.getIndent(numIndents)}${first}`,
-            ...middle.map((n) => this.getNodeText(n, numIndents + 1)),
-            `${this.getIndent(numIndents)}${last}`,
-        ];
-        return parts.join(this.eol);
     }
 
     private getPredicateText(node: SyntaxNode, numIndents: number): string {
@@ -174,13 +162,25 @@ class TreeSitterFormatter {
                     .join(this.eol);
 
             case "grouping":
-                return this.getVerticalPairNodeText(node, ")", numIndents);
+                return this.getMatchingPairText(
+                    node,
+                    1,
+                    ")",
+                    false,
+                    numIndents,
+                );
 
             case "list":
-                return this.getVerticalPairNodeText(node, "]", numIndents);
+                return this.getMatchingPairText(
+                    node,
+                    1,
+                    "]",
+                    false,
+                    numIndents,
+                );
 
             case "named_node":
-                return this.getNamedNodeText(node, numIndents);
+                return this.getMatchingPairText(node, 2, ")", true, numIndents);
 
             case "predicate":
                 return this.getPredicateText(node, numIndents);
