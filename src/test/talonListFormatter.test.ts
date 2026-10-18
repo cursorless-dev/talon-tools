@@ -18,6 +18,13 @@ suite("Talon list formatter", () => {
         assert.equal(actual, 'list: l\n-\n\na:\n    """b:c\n    d"""\n');
     });
 
+    test("CRLF comment", () => {
+        const actual = talonListFormatter(
+            'list: l\r\n-\r\n# Hello\r\nfoo: "bar"',
+        );
+        assert.equal(actual, 'list: l\n-\n\n# Hello\nfoo: "bar"\n');
+    });
+
     test("endOfLine: CRLF", () => {
         const actual = talonListFormatter('list: l\n-\na:\n  """b\n  c"""', {
             endOfLine: "crlf",

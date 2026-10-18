@@ -18,6 +18,16 @@ suite("Tree-sitter formatter", () => {
         });
     }
 
+    test("CRLF input", async () => {
+        const actual = await treeSitterFormatter("(aaa\r\n(bbb))");
+        assert.equal(actual, "(aaa\n    (bbb)\n)\n");
+    });
+
+    test("CRLF comment", async () => {
+        const actual = await treeSitterFormatter("(aaa\r\n;; Hello\r\n(bbb))");
+        assert.equal(actual, "(aaa\n    ;; Hello\n    (bbb)\n)\n");
+    });
+
     test("endOfLine: CRLF", async () => {
         const actual = await treeSitterFormatter("(aaa (bbb))", {
             endOfLine: "crlf",
