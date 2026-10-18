@@ -1,0 +1,16 @@
+list: l
+-
+a:
+
+  """hello
+  world"""
+b: c
+================ EXPECTED ================
+list: l
+-
+
+a:
+
+    """hello
+    world"""
+b: c

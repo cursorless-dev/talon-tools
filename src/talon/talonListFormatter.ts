@@ -2,11 +2,16 @@ import type { FormatterOptions } from "../types.js";
 import { DEFAULT_INSERT_FINAL_NEWLINE } from "../util/constants.js";
 import { getColumnWidth } from "../util/getColumnWidth.js";
 import { getEndOfLine } from "../util/getEndOfLine.js";
+import { getIndentation } from "../util/getIndentation.js";
 import { convertQuotes } from "./convertQuotes.js";
 import { parseTalonList } from "./parseTalonList.js";
 
 type Options = FormatterOptions<
-    "endOfLine" | "columnWidth" | "insertFinalNewline"
+    | "endOfLine"
+    | "indentTabs"
+    | "indentSize"
+    | "columnWidth"
+    | "insertFinalNewline"
 >;
 
 export function talonListFormatter(
@@ -15,6 +20,7 @@ export function talonListFormatter(
 ): string {
     const columnWidth = getColumnWidth(text) ?? options.columnWidth;
     const eol = getEndOfLine(options.endOfLine);
+    const indentation = getIndentation(options.indentTabs, options.indentSize);
     const talonList = parseTalonList(text);
     talonList.headers.sort((a, _b) =>
         a.type === "header" && a.key === "list" ? -1 : 0,
@@ -40,15 +46,32 @@ export function talonListFormatter(
             lines.push(item.text);
             continue;
         }
-        if (item.value != null) {
-            const keyWithColon =
-                columnWidth != null
-                    ? `${item.key}: `.padEnd(columnWidth)
-                    : `${item.key}: `;
-            const value = convertQuotes(item.value);
-            lines.push(`${keyWithColon}${value}`);
-        } else {
+        // Empty value lines means there is no colon after the key.
+        if (item.valueLines.length === 0) {
             lines.push(item.key);
+        }
+        // Non-empty value lines means there is a colon and possibly indented content after the key.
+        else {
+            const [firstValue, ...indentedValues] = item.valueLines;
+            let keyWithColon: string;
+
+            if (firstValue === "") {
+                keyWithColon = `${item.key}:`;
+            } else {
+                keyWithColon =
+                    columnWidth != null
+                        ? `${item.key}: `.padEnd(columnWidth)
+                        : `${item.key}: `;
+            }
+            const value = convertQuotes(firstValue);
+            lines.push(`${keyWithColon}${value}`);
+            for (const indentedValue of indentedValues) {
+                lines.push(
+                    indentedValue.length === 0
+                        ? ""
+                        : `${indentation}${indentedValue}`,
+                );
+            }
         }
     }
 
