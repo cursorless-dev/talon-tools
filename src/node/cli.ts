@@ -1,6 +1,6 @@
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import * as process from "node:process";
+import fs from "node:fs/promises";
+import path from "node:path";
+import process from "node:process";
 import type { Readable } from "node:stream";
 import getStdin from "get-stdin";
 import type { CLI, Logger, ParsedArgs } from "../types.js";

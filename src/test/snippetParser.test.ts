@@ -70,10 +70,10 @@ function testWhitespace() {
     const fixture = `
 name: foo
 -
-  
-  foo  
-  
- bar 
+
+  foo
+
+ bar
 baz `;
 
     const expected: SnippetFile = {
@@ -119,7 +119,7 @@ function testEmpty() {
 function testMultipleDocuments() {
     const fixture = `\
 name: mySnippet
-phrase: first 
+phrase: first
 -
 foo
 ---
@@ -208,14 +208,14 @@ b
 function testInvalidKey() {
     assert.throws(
         () => parseSnippetFile("unknown: test"),
-        /Invalid key 'unknown'/,
+        /Invalid key 'unknown'/u,
     );
 }
 
 function testInvalidVariableKey() {
     assert.throws(
         () => parseSnippetFile("$0.invalidField: test"),
-        /Invalid variable key '\$0\.invalidField'/,
+        /Invalid variable key '\$0\.invalidField'/u,
     );
 }
 
@@ -231,6 +231,6 @@ name: header
 
     assert.throws(
         () => parseSnippetFile(fixture),
-        /Header snippet must be first in file/,
+        /Header snippet must be first in file/u,
     );
 }

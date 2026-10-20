@@ -40,15 +40,15 @@ export function talonListFormatter(
             lines.push(item.text);
             continue;
         }
-        if (item.value != null) {
+        if (item.value == null) {
+            lines.push(item.key);
+        } else {
             const keyWithColon =
-                columnWidth != null
-                    ? `${item.key}: `.padEnd(columnWidth)
-                    : `${item.key}: `;
+                columnWidth == null
+                    ? `${item.key}: `
+                    : `${item.key}: `.padEnd(columnWidth);
             const value = convertQuotes(item.value);
             lines.push(`${keyWithColon}${value}`);
-        } else {
-            lines.push(item.key);
         }
     }
 

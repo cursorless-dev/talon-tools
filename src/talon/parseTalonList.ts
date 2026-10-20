@@ -25,7 +25,7 @@ export interface TalonList {
 }
 
 export function parseTalonList(text: string): TalonList {
-    const lines = text.split(/\r?\n/).map((l) => l.trim());
+    const lines = text.split(/\r?\n/u).map((l) => l.trim());
     const separatorIndex = lines.indexOf("-");
 
     if (separatorIndex === -1) {

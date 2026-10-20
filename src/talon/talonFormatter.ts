@@ -297,9 +297,9 @@ class TalonFormatter {
                 ) {
                     const right = this.getNodeText(rightNode.children[0]);
                     const leftWithPadding =
-                        this.columnWidth != null
-                            ? `${left}: `.padEnd(this.columnWidth)
-                            : `${left}: `;
+                        this.columnWidth == null
+                            ? `${left}: `
+                            : `${left}: `.padEnd(this.columnWidth);
                     if (
                         leftWithPadding.length + right.length <=
                         this.maxLineLength
