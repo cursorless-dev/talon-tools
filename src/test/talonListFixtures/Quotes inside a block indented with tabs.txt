@@ -1,0 +1,14 @@
+list: l
+-
+a:
+	"""hello
+	'quoted content'
+	world"""
+================ EXPECTED ================
+list: l
+-
+
+a:
+    """hello
+    'quoted content'
+    world"""

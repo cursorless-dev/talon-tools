@@ -23,8 +23,8 @@ bat
             ],
             items: [
                 { type: "comment", text: "# body" },
-                { type: "item", key: "air", value: "a" },
-                { type: "item", key: "bat", value: undefined },
+                { type: "item", key: "air", valueLines: ["a"] },
+                { type: "item", key: "bat", valueLines: [] },
             ],
         };
 
@@ -49,9 +49,9 @@ bat: b
         const expected: TalonList = {
             headers: [{ type: "header", key: "list", value: "user.my_list" }],
             items: [
-                { type: "item", key: "air", value: "a" },
+                { type: "item", key: "air", valueLines: ["a"] },
                 { type: "empty" },
-                { type: "item", key: "bat", value: "b" },
+                { type: "item", key: "bat", valueLines: ["b"] },
             ],
         };
 
@@ -65,8 +65,58 @@ bat: b
 
         assert.deepEqual(actual, {
             headers: [{ type: "header", key: "list", value: "user.my_list" }],
-            items: [{ type: "item", key: "a", value: "b" }],
+            items: [{ type: "item", key: "a", valueLines: ["b"] }],
         });
+    });
+
+    test("Collects indented values without interpreting their content", () => {
+        const actual = parseTalonList(
+            'list: l\n-\na:\n  """b:c\n  # content\n\n    extra spaces  \n  d"""\n\nbat: b\nempty:\ncat',
+        );
+        assert.deepEqual(actual.items, [
+            {
+                type: "item",
+                key: "a",
+                valueLines: [
+                    "",
+                    '"""b:c',
+                    "# content",
+                    "",
+                    "  extra spaces  ",
+                    'd"""',
+                ],
+            },
+            { type: "empty" },
+            { type: "item", key: "bat", valueLines: ["b"] },
+            { type: "item", key: "empty", valueLines: [""] },
+            { type: "item", key: "cat", valueLines: [] },
+        ]);
+    });
+
+    test("Uses the first nonblank line to determine block indentation", () => {
+        for (const blankLine of ["      ", "", "\t"]) {
+            const actual = parseTalonList(
+                `list: l\n-\na:\n${blankLine}\n  """hello\n  world"""\nb: c`,
+            );
+            assert.deepEqual(actual.items, [
+                {
+                    type: "item",
+                    key: "a",
+                    valueLines: ["", "", '"""hello', 'world"""'],
+                },
+                { type: "item", key: "b", valueLines: ["c"] },
+            ]);
+        }
+    });
+
+    test("Keeps whitespace-only lines outside an empty value", () => {
+        const actual = parseTalonList("list: l\n-\na:\n  \n    \nb: c");
+        assert.deepEqual(actual.items, [
+            { type: "item", key: "a", valueLines: [""] },
+            { type: "empty" },
+            { type: "empty" },
+            { type: "item", key: "b", valueLines: ["c"] },
+        ]);
     });
 
     test("Throws when separator is missing", () => {

@@ -10,4 +10,16 @@ suite("Snippet formatter", () => {
             assert.equal(actual, expected);
         });
     }
+
+    test("CRLF input", () => {
+        const actual = snippetFormatter("name: foo\r\n-\r\nbar");
+        assert.equal(actual, "name: foo\n-\nbar\n---\n");
+    });
+
+    test("endOfLine: CRLF", () => {
+        const actual = snippetFormatter("name: foo\n-\nbar", {
+            endOfLine: "crlf",
+        });
+        assert.equal(actual, "name: foo\r\n-\r\nbar\r\n---\r\n");
+    });
 });

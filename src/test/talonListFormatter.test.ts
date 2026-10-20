@@ -12,15 +12,27 @@ suite("Talon list formatter", () => {
     }
 
     test("CRLF input", () => {
-        const actual = talonListFormatter("list: l\r\n-\r\na:b");
-        assert.equal(actual, "list: l\n-\n\na: b\n");
+        const actual = talonListFormatter(
+            'list: l\r\n-\r\na:\r\n  """b:c\r\n  d"""',
+        );
+        assert.equal(actual, 'list: l\n-\n\na:\n    """b:c\n    d"""\n');
+    });
+
+    test("CRLF comment", () => {
+        const actual = talonListFormatter(
+            'list: l\r\n-\r\n# Hello\r\nfoo: "bar"',
+        );
+        assert.equal(actual, 'list: l\n-\n\n# Hello\nfoo: "bar"\n');
     });
 
     test("endOfLine: CRLF", () => {
-        const actual = talonListFormatter("list: l\n-\na:b", {
+        const actual = talonListFormatter('list: l\n-\na:\n  """b\n  c"""', {
             endOfLine: "crlf",
         });
-        assert.equal(actual, "list: l\r\n-\r\n\r\na: b\r\n");
+        assert.equal(
+            actual,
+            'list: l\r\n-\r\n\r\na:\r\n    """b\r\n    c"""\r\n',
+        );
     });
 
     test("columnWidth: 10", () => {
@@ -30,16 +42,25 @@ suite("Talon list formatter", () => {
         assert.equal(actual, "list: l\n-\n\na:        b\n");
     });
 
+    test("Formats multiline indentation using options", () => {
+        const input = 'list: l\n-\na:\n  """b\n  c"""';
+        assert.equal(
+            talonListFormatter(input, {
+                indentSize: 2,
+                insertFinalNewline: false,
+            }),
+            'list: l\n-\n\na:\n  """b\n  c"""',
+        );
+        assert.equal(
+            talonListFormatter(input, { indentTabs: true, columnWidth: 10 }),
+            'list: l\n-\n\na:\n\t"""b\n\tc"""\n',
+        );
+    });
+
     test("insertFinalNewline: false", () => {
         const actual = talonListFormatter("list: l\n-\na:b", {
             insertFinalNewline: false,
         });
         assert.equal(actual, "list: l\n-\n\na: b");
-    });
-
-    test("preserves key-only items", () => {
-        const actual = talonListFormatter("list: l\n-\na", {});
-
-        assert.equal(actual, "list: l\n-\n\na\n");
     });
 });

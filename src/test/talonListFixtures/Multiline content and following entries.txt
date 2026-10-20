@@ -1,0 +1,22 @@
+list: l
+-
+a:
+  """b:c
+  # content
+
+    extra spaces  
+  d"""
+
+b: c
+================ EXPECTED ================
+list: l
+-
+
+a:
+    """b:c
+    # content
+
+      extra spaces  
+    d"""
+
+b: c

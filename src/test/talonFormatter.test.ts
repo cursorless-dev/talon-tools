@@ -18,6 +18,11 @@ suite("Talon formatter", () => {
         });
     }
 
+    test("CRLF input", async () => {
+        const actual = await talonFormatter("foo:bar\r\nbaz:bongo");
+        assert.equal(actual, "foo: bar\nbaz: bongo\n");
+    });
+
     test("CRLF comment", async () => {
         const actual = await talonFormatter('# Hello\r\nfoo: "bar"');
         assert.equal(actual, '# Hello\nfoo: "bar"\n');
