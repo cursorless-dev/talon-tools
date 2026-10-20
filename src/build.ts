@@ -35,6 +35,7 @@ async function build(): Promise<void> {
 }
 
 try {
+    // oxlint-disable-next-line node/no-top-level-await
     await build();
 } catch (error) {
     console.error(error);

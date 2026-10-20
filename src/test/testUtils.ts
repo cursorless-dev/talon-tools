@@ -1,5 +1,5 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
+import fs from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fastGlob from "fast-glob";
 import type { SyntaxNode } from "../types.js";
@@ -27,9 +27,7 @@ export async function captureStreamWrite<T>(
     const originalWrite = stream.write.bind(stream);
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    (stream.write as unknown as (chunk: string) => boolean) = (
-        chunk: string | Uint8Array,
-    ) => {
+    stream.write = (chunk: string | Uint8Array) => {
         text += chunk.toString();
         return true;
     };
@@ -89,7 +87,7 @@ export function getGrep(): string | undefined {
     );
     const content = fs.readFileSync(subsetFile, "utf8");
     const pattern = content
-        .split(/\r?\n/)
+        .split(/\r?\n/u)
         .map((line) => line.trim())
         .filter((line) => line.length > 0 && !line.startsWith("//"))
         .join("|");

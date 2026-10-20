@@ -280,7 +280,7 @@ suite("CLI", () => {
                     debug: false,
                     filePath: fileName,
                 }),
-                /boom/,
+                /boom/u,
             );
         } finally {
             await cleanupTempFile(fileName);
@@ -635,7 +635,7 @@ suite("CLI", () => {
             });
 
             assert.equal(output.result, EXIT_OK);
-            assert.match(output.stdoutText, /^\d+\.\d+\.\d+\n$/);
+            assert.match(output.stdoutText, /^\d+\.\d+\.\d+\n$/u);
             assert.equal(output.stderrText, "");
         } finally {
             process.argv = originalArgv;
@@ -708,7 +708,7 @@ suite("CLI", () => {
     test("Rejects unknown arguments", () => {
         assert.throws(
             () => parseArgs(["--check", "--write"]),
-            /Unknown argument: --write/,
+            /Unknown argument: --write/u,
         );
     });
 });
@@ -785,9 +785,7 @@ async function captureStreamWrite<T>(
     const originalWrite = stream.write.bind(stream);
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    (stream.write as unknown as (chunk: string) => boolean) = (
-        chunk: string | Uint8Array,
-    ) => {
+    stream.write = (chunk: string | Uint8Array) => {
         text += chunk.toString();
         return true;
     };
@@ -808,18 +806,12 @@ async function captureStdoutAndStderr<T>(
     const originalStdoutWrite = process.stdout.write.bind(process.stdout);
     const originalStderrWrite = process.stderr.write.bind(process.stderr);
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    (process.stdout.write as unknown as (chunk: string) => boolean) = (
-        chunk: string | Uint8Array,
-    ) => {
+    process.stdout.write = (chunk: string | Uint8Array) => {
         stdoutText += chunk.toString();
         return true;
     };
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    (process.stderr.write as unknown as (chunk: string) => boolean) = (
-        chunk: string | Uint8Array,
-    ) => {
+    process.stderr.write = (chunk: string | Uint8Array) => {
         stderrText += chunk.toString();
         return true;
     };

@@ -59,9 +59,9 @@ export function talonListFormatter(
                 keyWithColon = `${item.key}:`;
             } else {
                 keyWithColon =
-                    columnWidth != null
-                        ? `${item.key}: `.padEnd(columnWidth)
-                        : `${item.key}: `;
+                    columnWidth == null
+                        ? `${item.key}: `
+                        : `${item.key}: `.padEnd(columnWidth);
             }
             const value = convertQuotes(firstValue);
             lines.push(`${keyWithColon}${value}`);

@@ -13,9 +13,9 @@ export class SyntaxError extends Error {
     }
 
     public getFileMessage(file: string): string {
-        return this.location != null
-            ? `${file}(${this.location}): ${shortMessage}`
-            : `${file}: ${shortMessage}`;
+        return this.location == null
+            ? `${file}: ${shortMessage}`
+            : `${file}(${this.location}): ${shortMessage}`;
     }
 }
 
@@ -24,9 +24,9 @@ export function isSyntaxError(error: unknown): error is SyntaxError {
 }
 
 function getMessage(location: string | undefined): string {
-    return location != null ? `${shortMessage} at ${location}.` : shortMessage;
+    return location == null ? shortMessage : `${shortMessage} at ${location}.`;
 }
 
 function getLocation(point: Point | undefined): string | undefined {
-    return point != null ? `${point.row + 1}:${point.column + 1}` : undefined;
+    return point == null ? undefined : `${point.row + 1}:${point.column + 1}`;
 }

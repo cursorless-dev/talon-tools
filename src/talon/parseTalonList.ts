@@ -28,8 +28,8 @@ export interface TalonList {
 }
 
 export function parseTalonList(text: string): TalonList {
-    const lines = text.split(/\r?\n/);
-    const separatorIndex = lines.findIndex((line) => /^\s*-\s*$/.test(line));
+    const lines = text.split(/\r?\n/u);
+    const separatorIndex = lines.findIndex((line) => /^\s*-\s*$/u.test(line));
 
     if (separatorIndex === -1) {
         throw new Error("Separator not found in talon list");
@@ -100,7 +100,7 @@ function readIndentedLines(lines: string[], startIndex: number): string[] {
     ) {
         firstNonBlankIndex++;
     }
-    const indentation = /^[\t ]+/.exec(lines[firstNonBlankIndex])?.[0];
+    const indentation = /^[\t ]+/u.exec(lines[firstNonBlankIndex])?.[0];
 
     if (indentation == null) {
         return [];

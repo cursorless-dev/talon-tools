@@ -1,4 +1,4 @@
-import * as path from "node:path";
+import path from "node:path";
 import type { Options } from "fast-glob";
 import fastGlob from "fast-glob";
 import type { CLI } from "../types.js";
