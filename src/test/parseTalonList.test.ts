@@ -72,14 +72,14 @@ bat: b
     test("Throws when separator is missing", () => {
         assert.throws(
             () => parseTalonList("list: user.my_list"),
-            /Separator not found in talon list/,
+            /Separator not found in talon list/u,
         );
     });
 
     test("Throws when a header value is missing", () => {
         assert.throws(
             () => parseTalonList("list\n-\na: b"),
-            /Header value missing/,
+            /Header value missing/u,
         );
     });
 });

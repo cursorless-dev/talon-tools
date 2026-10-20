@@ -1,15 +1,15 @@
 import type { Snippet, SnippetFile, SnippetVariable } from "./snippetTypes.js";
 
 export function parseSnippetFile(content: string): SnippetFile {
-    const documentContents = content.split(/^---$/m);
+    const documentContents = content.split(/^---$/mu);
     const file: SnippetFile = { snippets: [] };
 
     for (const text of documentContents) {
-        const match = /^-$/m.exec(text);
-        const contextText = match != null ? text.slice(0, match.index) : text;
+        const match = /^-$/mu.exec(text);
+        const contextText = match == null ? text : text.slice(0, match.index);
         const bodyText =
-            match != null ? text.slice(match.index + match[0].length) : null;
-        const body = bodyText != null ? parseBody(bodyText) : null;
+            match == null ? null : text.slice(match.index + match[0].length);
+        const body = bodyText == null ? null : parseBody(bodyText);
         let context = parseContext(contextText);
 
         // Snippet with body
@@ -74,7 +74,7 @@ function parseContext(text: string): Context | undefined {
 
 function parseContextPairs(text: string): Record<string, string> {
     const lines = text
-        .split(/\r?\n/)
+        .split(/\r?\n/u)
         .map((l) => l.trim())
         .filter(Boolean);
     const pairs: Record<string, string> = {};
@@ -134,14 +134,14 @@ function parseVariables(variables: Record<string, string>): SnippetVariable[] {
 
 function parseBody(text: string): string[] | undefined {
     // Find first line that is not empty. Preserve indentation.
-    const matchLeading = /^[ \t]*\S/m.exec(text);
+    const matchLeading = /^[ \t]*\S/mu.exec(text);
     if (matchLeading?.index == null) {
         return undefined;
     }
     return text
         .slice(matchLeading.index)
         .trimEnd()
-        .split(/\r?\n/)
+        .split(/\r?\n/u)
         .map((l) => l.trimEnd());
 }
 

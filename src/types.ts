@@ -18,13 +18,13 @@ export interface CLI {
     binName: "snippet-fmt" | "talon-fmt" | "tree-sitter-fmt";
     fileEndings: readonly string[];
 
-    getStdinFileEnding(text: string): string;
-    format(
+    getStdinFileEnding: (text: string) => string;
+    format: (
         text: string,
         options: Options,
         filePath: string,
         debug: boolean,
-    ): Promise<string>;
+    ) => Promise<string>;
 }
 
 export type EndOfLine = "lf" | "crlf";
@@ -56,17 +56,17 @@ export interface LoggerEntry {
 }
 
 export interface Logger {
-    log(message: string): void;
-    warn(message: string): void;
-    error(message: string): void;
+    log: (message: string) => void;
+    warn: (message: string) => void;
+    error: (message: string) => void;
 }
 
 export interface TestLogger extends Logger {
-    getEntries(): readonly LoggerEntry[];
+    getEntries: () => readonly LoggerEntry[];
 }
 
 export interface DebugLogger {
-    debug(message: string): void;
+    debug: (message: string) => void;
 }
 
 export interface EditorConfigOptions extends KnownProps {
