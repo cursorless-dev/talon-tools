@@ -6,7 +6,7 @@ interface TalonListHeader {
 interface TalonListItem {
     type: "item";
     key: string;
-    value?: string;
+    valueLines: string[];
 }
 interface EmptyLine {
     type: "empty";
