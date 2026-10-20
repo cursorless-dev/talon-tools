@@ -326,6 +326,8 @@ function forceMultilineBody(node: SyntaxNode): boolean {
         case "if_statement":
         case "for_statement":
             return true;
+        case "expression_statement":
+            return node.startPosition.row !== node.endPosition.row;
         default:
             return false;
     }
