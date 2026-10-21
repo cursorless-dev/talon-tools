@@ -1,0 +1,6 @@
+foo:
+    insert(
+        "x"
+    )
+================ EXPECTED ================
+foo: insert("x")

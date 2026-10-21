@@ -218,7 +218,7 @@ class TalonFormatter {
                 return node.children.map((n) => this.getNodeText(n)).join("");
 
             case "string":
-                return formatString(node);
+                return formatString(node, this.eol);
 
             case "match_modifier":
             case "for":
@@ -283,40 +283,78 @@ class TalonFormatter {
 
     private addLeftRightNode(node: SyntaxNode, forceMultiline: boolean): void {
         const [leftNode, _colonNode, ...rightNodes] = node.children;
-        const left = this.getNodeText(leftNode);
 
-        if (!forceMultiline && rightNodes.length === 1) {
-            if (
-                !this.preserveMultiline ||
-                isLeftRightSingleLine(leftNode, rightNodes)
-            ) {
-                const rightNode = rightNodes[0];
-                if (
-                    rightNode.children.length === 1 &&
-                    !forceMultilineBody(rightNode.children[0])
-                ) {
-                    const right = this.getNodeText(rightNode.children[0]);
-                    const leftWithPadding =
-                        this.columnWidth == null
-                            ? `${left}: `
-                            : `${left}: `.padEnd(this.columnWidth);
-                    if (
-                        leftWithPadding.length + right.length <=
-                        this.maxLineLength
-                    ) {
-                        this.lines.push(leftWithPadding + right);
-                        return;
-                    }
-                }
-            }
+        const singleLineText = forceMultiline
+            ? undefined
+            : this.getSingleLineText(leftNode, rightNodes);
+
+        if (singleLineText != null) {
+            this.lines.push(singleLineText);
+            return;
         }
 
+        const left = this.getNodeText(leftNode);
         this.lines.push(`${left}:`);
 
         for (const n of rightNodes) {
             this.addNode(n, true);
         }
     }
+
+    private getSingleLineText(
+        leftNode: SyntaxNode,
+        rightNodes: SyntaxNode[],
+    ): string | undefined {
+        // Multiple right nodes cannot be formatted on a single line.
+        if (rightNodes.length !== 1) {
+            return undefined;
+        }
+
+        // If preserveMultiline is enabled and the left and right nodes are not on the same line, do not format on a single line.
+        if (
+            this.preserveMultiline &&
+            !isLeftRightSingleLine(leftNode, rightNodes)
+        ) {
+            return undefined;
+        }
+
+        const rightNode = rightNodes[0];
+
+        // If the right node has multiple children, it cannot be formatted on a single line.
+        if (rightNode.children.length !== 1) {
+            return undefined;
+        }
+
+        // If the right node's body should be forced to multiline, do not format on a single line.
+        if (forceMultilineBody(rightNode.children[0])) {
+            return undefined;
+        }
+
+        const right = this.getNodeText(rightNode.children[0]);
+
+        // The formatted value must be a single line
+        if (stringIsMultiLine(right)) {
+            return undefined;
+        }
+
+        const left = this.getNodeText(leftNode);
+
+        const leftWithPadding =
+            this.columnWidth == null
+                ? `${left}: `
+                : `${left}: `.padEnd(this.columnWidth);
+
+        // If the combined length of the left part with padding and the right part exceeds the maximum line length, do not format on a single line.
+        if (leftWithPadding.length + right.length > this.maxLineLength) {
+            return undefined;
+        }
+
+        return `${leftWithPadding}${right}`;
+    }
+}
+
+function stringIsMultiLine(value: string): boolean {
+    return /[\r\n]/u.test(value);
 }
 
 // Returns true if the node should remain in the declaration block instead of
@@ -326,8 +364,6 @@ function forceMultilineBody(node: SyntaxNode): boolean {
         case "if_statement":
         case "for_statement":
             return true;
-        case "expression_statement":
-            return node.startPosition.row !== node.endPosition.row;
         default:
             return false;
     }
@@ -354,9 +390,9 @@ function isFirstChild(node: SyntaxNode): boolean {
     return node.id === node.parent?.children[0].id;
 }
 
-function formatString(node: SyntaxNode): string {
-    // Convert single quotes to double quotes
-    const text = convertQuotes(node.text);
+function formatString(node: SyntaxNode, eol: string): string {
+    // Convert single quotes to double quotes and normalize line endings
+    const text = convertQuotes(node.text).replaceAll(/\r?\n/gu, eol);
 
     // A single string literal is allowed as syntactic sugar for the insert
     // action, but not in combination with other sibling statements.

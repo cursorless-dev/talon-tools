@@ -1,0 +1,7 @@
+foo:
+    insert("""hello
+    world""")
+================ EXPECTED ================
+foo:
+    insert("""hello
+    world""")

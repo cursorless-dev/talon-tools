@@ -23,6 +23,11 @@ suite("Talon formatter", () => {
         assert.equal(actual, "foo: bar\nbaz: bongo\n");
     });
 
+    test("CRLF string", async () => {
+        const actual = await talonFormatter('foo:\r\n  """Hello\r\n  world"""');
+        assert.equal(actual, 'foo:\n    """Hello\n  world"""\n');
+    });
+
     test("CRLF comment", async () => {
         const actual = await talonFormatter('# Hello\r\nfoo: "bar"');
         assert.equal(actual, '# Hello\nfoo: "bar"\n');
@@ -81,6 +86,16 @@ suite("Talon formatter", () => {
             preserveMultiline: true,
         });
         assert.equal(actual, "aaa:\n    bbb\n");
+    });
+
+    test("preserveMultiline: true keeps normalized multiline argument lists below the colon", async () => {
+        const actual = await talonFormatter(
+            'foo:\n    insert(\n        "x"\n    )',
+            {
+                preserveMultiline: true,
+            },
+        );
+        assert.equal(actual, 'foo:\n    insert("x")\n');
     });
 
     test("columnWidth: 10", async () => {
