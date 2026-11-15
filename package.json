@@ -1,6 +1,6 @@
 {
     "name": "@cursorless/talon-tools",
-    "version": "0.13.1",
+    "version": "0.14.0",
     "description": "Linting and formatting tools for Talon and Cursorless",
     "author": "Cursorless Dev",
     "license": "MIT",
@@ -56,7 +56,7 @@
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
-        "@types/node": "^24.19.2",
+        "@types/node": "^26.6.6",
         "esbuild": "^0.28.2",
         "mocha": "^12.0.3",
         "oxfmt": "^0.74.0",

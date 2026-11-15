@@ -2,16 +2,19 @@
   name: Format snippet files
   entry: snippet-fmt
   language: node
+  language_version: 26.13.1
   files: \.snippet$
 
 - id: talon-fmt
   name: Format Talon files
   entry: talon-fmt
   language: node
+  language_version: 26.13.1
   files: \.(talon|talon-list)$
 
 - id: tree-sitter-fmt
   name: Format Tree-sitter query files
   entry: tree-sitter-fmt
   language: node
+  language_version: 26.13.1
   files: \.scm$
