@@ -54,6 +54,7 @@ const disabledRules = [
     "unicorn/no-null",
     "unicorn/prefer-at",
     "unicorn/prefer-spread",
+    "unicorn/prefer-ternary",
     "unicorn/switch-case-braces",
 ];
 
@@ -142,10 +143,16 @@ export default defineConfig({
 
     overrides: [
         {
-            files: ["src/node/**/*.ts", "src/test/**/*.ts", "src/build.ts"],
+            files: [
+                "src/node/**/*.ts",
+                "src/test/**/*.ts",
+                "src/build.ts",
+                "src/bundleAssets.ts",
+            ],
             rules: {
                 "import/no-nodejs-modules": "off",
                 "no-restricted-imports": "off",
+                "node/no-top-level-await": "off",
             },
         },
     ],

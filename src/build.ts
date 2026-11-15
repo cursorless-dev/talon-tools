@@ -1,6 +1,7 @@
 import { exit } from "node:process";
 import esbuild from "esbuild";
 import type { BuildOptions } from "esbuild";
+import { bundleAssets } from "./bundleAssets.js";
 
 async function build(): Promise<void> {
     console.log("Running esbuild...");
@@ -35,8 +36,8 @@ async function build(): Promise<void> {
 }
 
 try {
-    // oxlint-disable-next-line node/no-top-level-await
     await build();
+    await bundleAssets();
 } catch (error) {
     console.error(error);
     exit(1);

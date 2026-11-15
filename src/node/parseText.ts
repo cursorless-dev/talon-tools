@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { Language, Parser } from "web-tree-sitter";
 import type { SyntaxNode } from "../types.js";
 
@@ -8,8 +7,6 @@ type ParserName = "tree-sitter-talon" | "tree-sitter-query";
 
 let initPromise: Promise<void> | undefined;
 const languageCache = new Map<ParserName, Promise<Language>>();
-// oxlint-disable-next-line unicorn/prefer-import-meta-properties
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 function initTreeSitter() {
     initPromise ??= Parser.init();
@@ -31,16 +28,10 @@ function loadLanguage(parserName: ParserName) {
 function getWasmFilePath(parserName: ParserName) {
     const fileName = `${parserName}.wasm`;
     const wasmFilePath = [
-        path.join(
-            moduleDir,
-            "../../node_modules/@cursorless/tree-sitter-wasms/out",
-            fileName,
-        ),
-        path.join(
-            moduleDir,
-            "../node_modules/@cursorless/tree-sitter-wasms/out",
-            fileName,
-        ),
+        // Used by production build
+        path.join(import.meta.dirname, fileName),
+        // Used by development/test build
+        path.join(import.meta.dirname, "../../dist", fileName),
     ].find((candidate) => fs.existsSync(candidate));
 
     if (wasmFilePath == null) {
