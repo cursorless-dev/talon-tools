@@ -100,7 +100,7 @@ foo bar baz:   "foo bar baz"
 ```yaml
 repos:
   - repo: https://github.com/cursorless-dev/talon-tools
-    rev: v0.13.1
+    rev: v0.14.0
     hooks:
       - id: talon-fmt
       - id: snippet-fmt
